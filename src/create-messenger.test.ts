@@ -198,6 +198,28 @@ describe(createIframeMessenger.name, () => {
         );
     });
 
+    it('fails on invalid origin)', async () => {
+        const {iframe, messenger} = await setupTest(['something.com']);
+
+        await assertThrows(
+            () =>
+                messenger.sendMessageToChild({
+                    iframeElement: iframe,
+                    message: {
+                        type: ExampleMessageType.SendScale,
+                        data: {
+                            width: 11,
+                            height: 22,
+                        },
+                    },
+                    maxAttemptCount: 2,
+                }),
+            {
+                matchConstructor: Error,
+            },
+        );
+    });
+
     it('succeeds if iframe acknowledges the message', async () => {
         const {iframe, messenger} = await setupTest();
 
@@ -238,6 +260,90 @@ describe(createIframeMessenger.name, () => {
         assert.isUndefined(result);
     });
 
+    it('tries again if verify data fails at first', async () => {
+        const {iframe, messenger} = await setupTest();
+
+        const iframeSrcDoc = html`
+            <html>
+                <head>
+                    <script>
+                        window.addEventListener('message', (event) => {
+                            const message = event.data;
+                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                                window.postMessage({
+                                    type: message.type,
+                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    data: {height: 1, width: 2},
+                                });
+                            }
+                        });
+                    </script>
+                </head>
+                <body></body>
+            </html>
+        `;
+
+        iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
+
+        let verifyCount = 0;
+
+        const result = await messenger.sendMessageToChild({
+            iframeElement: iframe,
+            message: {
+                type: ExampleMessageType.SendSize,
+            },
+            verifyChildData() {
+                verifyCount++;
+                return verifyCount > 2;
+            },
+        });
+
+        // undefined because the child responded with undefined as the message data
+        assert.deepStrictEqual(result, {height: 1, width: 2});
+    });
+
+    it('fails if the child sends an error', async () => {
+        const {iframe, messenger} = await setupTest();
+
+        const iframeSrcDoc = html`
+            <html>
+                <head>
+                    <script>
+                        window.addEventListener('message', (event) => {
+                            const message = event.data;
+                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                                window.postMessage({
+                                    type: 'error',
+                                    direction: '${MessageDirectionEnum.FromChild}',
+                                });
+                            }
+                        });
+                    </script>
+                </head>
+                <body></body>
+            </html>
+        `;
+
+        iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
+
+        await assertThrows(
+            () =>
+                messenger.sendMessageToChild({
+                    iframeElement: iframe,
+                    message: {
+                        type: ExampleMessageType.SendSize,
+                    },
+                    verifyChildData() {
+                        return true;
+                    },
+                    maxAttemptCount: 5,
+                }),
+            {
+                matchMessage: 'Child threw an error',
+            },
+        );
+    });
+
     it('fails if iframe loads but never responds to the message', async () => {
         const {iframe, messenger} = await setupTest();
 
@@ -266,6 +372,28 @@ describe(createIframeMessenger.name, () => {
                 }),
             {
                 matchConstructor: Error,
+            },
+        );
+    });
+
+    it('fails if no iframe is given', async () => {
+        const {messenger} = await setupTest();
+
+        await assertThrows(
+            () =>
+                messenger.sendMessageToChild({
+                    iframeElement: undefined as any,
+                    message: {
+                        type: ExampleMessageType.SendScale,
+                        data: {
+                            width: 11,
+                            height: 22,
+                        },
+                    },
+                    maxAttemptCount: 2,
+                }),
+            {
+                matchMessage: 'No iframe element was provided',
             },
         );
     });

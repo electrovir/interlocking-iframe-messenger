@@ -190,14 +190,17 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
     };
 }
 
-const baseDurationWait = 10;
-
 function calculateAttemptWaitDuration(attemptCount: number) {
-    return Math.min(
-        Math.max(Math.floor(Math.pow(attemptCount + 1, 3) * baseDurationWait), baseDurationWait),
-        5000,
-    );
+    const waitDuration = Math.min(Math.floor(Math.pow(attemptCount, 3)), 5000);
+
+    return waitDuration;
 }
+
+// console.info(
+//     Array(20)
+//         .fill(0)
+//         .map((value, index) => calculateAttemptWaitDuration(index)),
+// );
 
 async function sendPingPongMessage(
     {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
@@ -268,18 +271,12 @@ async function sendPingPongMessage(
         }
     }
 
-    function getMessageContext() {
-        return iframeElement.contentWindow;
-    }
-
-    let previousContext = getMessageContext();
-    previousContext?.addEventListener('message', responseListener);
+    let previousContext: Window | null | undefined = undefined;
 
     const startTime = Date.now();
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
-        await wait(calculateAttemptWaitDuration(tryCount));
-        const newContext = getMessageContext();
+        const newContext = iframeElement.contentWindow;
 
         if (newContext) {
             previousContext?.removeEventListener('message', responseListener);
@@ -290,9 +287,11 @@ async function sendPingPongMessage(
             messagePosted = true;
             newContext.postMessage(fullMessageToSend);
         }
+        await wait(calculateAttemptWaitDuration(tryCount));
         tryCount++;
     }
     const attemptDuration = Date.now() - startTime;
+    previousContext?.removeEventListener('message', responseListener);
 
     if (listenerError) {
         throw listenerError;
