@@ -1,6 +1,6 @@
 {
     "name": "interlocking-iframe-messenger",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Post messages to a child iframe while accounting for race conditions.",
     "keywords": [
         "condition",

@@ -11,6 +11,8 @@ Potential race conditions that are handled include:
 
 Currently this only works as the parent content being the communication initiator. The child only responds to messages from the parent, it doesn't send messages of its own accord. If the parent is ready for specific data from the child, it must send a message to request that data.
 
+See a simple live demo at [electrovir.github.io/interlocking-iframe-messenger](https://electrovir.github.io/interlocking-iframe-messenger).
+
 ## install
 
 ```bash
