@@ -1,58 +1,64 @@
 import {ensureError, MaybePromise, wait} from '@augment-vir/common';
 import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
 
-export enum MessageDirection {
+export enum MessageDirectionEnum {
     FromParent = 'from-parent',
     FromChild = 'from-child',
 }
 
 export type Message<
-    MessageType extends keyof DataTypeOptions,
-    DataTypeOptions extends Record<string, any>,
-    MessageDirectionGeneric extends MessageDirection,
+    MessageType extends keyof MessageDataOptions,
+    MessageDataOptions extends MessageDataBase,
+    MessageDirectionGeneric extends MessageDirectionEnum,
 > = {
-    type: MessageType;
-    direction: MessageDirectionGeneric;
-} & (undefined extends DataTypeOptions[MessageType][MessageDirectionGeneric]
-    ? {data?: DataTypeOptions[MessageType][MessageDirectionGeneric]}
-    : {data: DataTypeOptions[MessageType][MessageDirectionGeneric]});
+    [SpecificMessageType in MessageType]: {
+        type: SpecificMessageType;
+        direction: MessageDirectionGeneric;
+    } & (undefined extends MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]
+        ? {data?: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]}
+        : {data: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]});
+}[MessageType];
 
 function isMessageKind<
-    MessageType extends keyof DataTypeOptions,
-    DataTypeOptions extends Record<string, any>,
-    MessageDirectionGeneric extends MessageDirection,
+    SpecificMessageType extends keyof MessageDataOptions,
+    MessageDataOptions extends MessageDataBase,
+    MessageDirectionGeneric extends MessageDirectionEnum,
 >(
-    type: MessageType,
+    type: SpecificMessageType,
     direction: MessageDirectionGeneric,
-    message: Readonly<Message<MessageType, any, MessageDirection>>,
-): message is Message<MessageType, DataTypeOptions, MessageDirectionGeneric> {
+    message: Readonly<Message<any, any, any>>,
+): message is Message<SpecificMessageType, MessageDataOptions, MessageDirectionGeneric> {
     return message.type === type && message.direction === direction;
 }
 
 type GenericSendMessageInputs<
-    MessageType extends keyof DataTypeOptions,
-    DataTypeOptions extends Record<string, any>,
+    MessageType extends keyof MessageDataOptions,
+    MessageDataOptions extends MessageDataBase,
 > = {
     iframeElement: HTMLIFrameElement;
     maxAttemptCount?: number | undefined;
     message: Omit<
         Message<
             MessageType,
-            DataTypeOptions,
+            MessageDataOptions,
             /**
              * Always use FromParent here because the child doesn't have access to this TypeScript
              * code, so we can't share this function with it :'(
              */
-            MessageDirection.FromParent
+            MessageDirectionEnum.FromParent
         >,
         'direction'
     >;
-} & (Message<MessageType, DataTypeOptions, MessageDirection.FromChild>['data'] extends undefined
+} & (Message<
+    MessageType,
+    MessageDataOptions,
+    MessageDirectionEnum.FromChild
+>['data'] extends undefined
     ? {verifyData?: undefined}
     : {
           verifyData: (
               data: Readonly<
-                  Message<MessageType, DataTypeOptions, MessageDirection.FromChild>['data']
+                  Message<MessageType, MessageDataOptions, MessageDirectionEnum.FromChild>['data']
               >,
           ) => boolean;
       });
@@ -90,22 +96,36 @@ export type IframeMessengerOptions = {
     maxAttemptCount?: number | undefined;
 };
 
-export type IframeMessenger<DataTypeOptions extends Record<string, any>> = {
-    sendMessageToChild: <SpecificMessageType extends keyof DataTypeOptions>(
-        inputs: GenericSendMessageInputs<SpecificMessageType, DataTypeOptions>,
-    ) => Promise<DataTypeOptions[SpecificMessageType][MessageDirection.FromChild]>;
+export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
+    sendMessageToChild: <SpecificMessageType extends keyof MessageDataOptions>(
+        inputs: GenericSendMessageInputs<SpecificMessageType, MessageDataOptions>,
+    ) => Promise<MessageDataOptions[SpecificMessageType][MessageDirectionEnum.FromChild]>;
     listenForParentMessages: (
         callback: (
-            message: Message<keyof DataTypeOptions, DataTypeOptions, MessageDirection.FromParent>,
-        ) => MaybePromise<DataTypeOptions[keyof DataTypeOptions][MessageDirection.FromChild]>,
+            message: Message<
+                keyof MessageDataOptions,
+                MessageDataOptions,
+                MessageDirectionEnum.FromParent
+            >,
+        ) => MaybePromise<
+            MessageDataOptions[keyof MessageDataOptions][MessageDirectionEnum.FromChild]
+        >,
     ) => void;
 };
 
-export function createIframeMessenger<DataTypeOptions extends Record<string, any>>({
+export type MessageDataBase = Record<
+    string,
+    {
+        [MessageDirectionEnum.FromChild]: unknown;
+        [MessageDirectionEnum.FromParent]: unknown;
+    }
+>;
+
+export function createIframeMessenger<MessageDataOptions extends MessageDataBase>({
     allowedOrigins,
     maxAttemptCount = 10,
     ...otherOptions
-}: IframeMessengerOptions): IframeMessenger<DataTypeOptions> {
+}: IframeMessengerOptions): IframeMessenger<MessageDataOptions> {
     if (allowedOrigins !== AnyOrigin && allowedOrigins.includes('*')) {
         allowedOrigins = AnyOrigin;
     }
@@ -142,19 +162,19 @@ export function createIframeMessenger<DataTypeOptions extends Record<string, any
             globalThis.addEventListener('message', async (messageEvent) => {
                 assertAllowedOrigin(allowedOrigins, messageEvent);
                 const message: Message<
-                    keyof DataTypeOptions,
-                    DataTypeOptions,
-                    MessageDirection.FromParent
+                    keyof MessageDataOptions,
+                    MessageDataOptions,
+                    MessageDirectionEnum.FromParent
                 > = messageEvent.data;
 
-                if (message.direction !== MessageDirection.FromParent) {
+                if (message.direction !== MessageDirectionEnum.FromParent) {
                     return;
                 }
 
                 const responseData = await callback(message);
                 const messageForParent = {
                     type: message.type,
-                    direction: MessageDirection.FromChild,
+                    direction: MessageDirectionEnum.FromChild,
                     data: responseData,
                 };
 
@@ -198,11 +218,14 @@ async function sendPingPongMessage(
         | undefined;
     let listenerError: Error | undefined;
     let messagePosted = false;
-    const fullMessageToSend: Omit<Message<any, any, MessageDirection.FromParent>, 'direction'> & {
-        direction: MessageDirection.FromParent;
+    const fullMessageToSend: Omit<
+        Message<any, any, MessageDirectionEnum.FromParent>,
+        'direction'
+    > & {
+        direction: MessageDirectionEnum.FromParent;
     } = {
         ...messageToSend,
-        direction: MessageDirection.FromParent,
+        direction: MessageDirectionEnum.FromParent,
     };
 
     const expectedMessageType = messageToSend.type;
@@ -213,7 +236,7 @@ async function sendPingPongMessage(
 
             const receivedMessage: Message<any, any, any> = messageEvent.data;
 
-            if (receivedMessage.direction !== MessageDirection.FromChild) {
+            if (receivedMessage.direction !== MessageDirectionEnum.FromChild) {
                 return;
             }
 
@@ -224,7 +247,7 @@ async function sendPingPongMessage(
             if (
                 receivedMessage &&
                 messagePosted &&
-                isMessageKind(expectedMessageType, MessageDirection.FromChild, receivedMessage)
+                isMessageKind(expectedMessageType, MessageDirectionEnum.FromChild, receivedMessage)
             ) {
                 let isDataValid = false;
                 try {

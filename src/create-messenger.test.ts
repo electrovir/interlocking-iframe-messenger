@@ -1,11 +1,11 @@
-import {assertThrows, typedAssertInstanceOf} from '@augment-vir/browser-testing';
+import {assertThrows, assertTypeOf, typedAssertInstanceOf} from '@augment-vir/browser-testing';
 import {convertTemplateToString} from '@augment-vir/element-vir';
 import {assert, fixture as renderFixture, html} from '@open-wc/testing';
 import {
     AllowedOrigins,
     AnyOrigin,
     createIframeMessenger,
-    MessageDirection,
+    MessageDirectionEnum,
 } from './create-messenger';
 import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
 
@@ -47,30 +47,36 @@ enum ExampleMessageType {
 
 type ExampleMessageData = {
     [ExampleMessageType.Ready]: {
-        [MessageDirection.FromParent]: undefined;
-        [MessageDirection.FromChild]: undefined;
+        [MessageDirectionEnum.FromParent]: undefined;
+        [MessageDirectionEnum.FromChild]: undefined;
     };
     [ExampleMessageType.SendSize]: {
-        [MessageDirection.FromParent]: undefined;
-        [MessageDirection.FromChild]: Dimensions;
+        [MessageDirectionEnum.FromParent]: undefined;
+        [MessageDirectionEnum.FromChild]: Dimensions;
     };
     [ExampleMessageType.SendScale]: {
-        [MessageDirection.FromParent]: Dimensions;
-        [MessageDirection.FromChild]: undefined;
+        [MessageDirectionEnum.FromParent]: Dimensions;
+        [MessageDirectionEnum.FromChild]: undefined;
     };
     [ExampleMessageType.SendScalingMethod]: {
-        [MessageDirection.FromParent]: 'pixelated' | 'default';
-        [MessageDirection.FromChild]: undefined;
+        [MessageDirectionEnum.FromParent]: 'pixelated' | 'default';
+        [MessageDirectionEnum.FromChild]: undefined;
     };
     [ExampleMessageType.ForceSize]: {
-        [MessageDirection.FromParent]: Dimensions | undefined;
-        [MessageDirection.FromChild]: undefined;
+        [MessageDirectionEnum.FromParent]: Dimensions | undefined;
+        [MessageDirectionEnum.FromChild]: undefined;
     };
 };
 
 describe(createIframeMessenger.name, () => {
-    it('has proper type constraints', async () => {
-        async function typeTests() {
+    it('has proper type constraints in sendMessageToChild', async () => {
+        /**
+         * Don't actually call this function, it's being used for type testing purposes and
+         * shouldn't actually be called in the tests because they will all error.
+         *
+         * @deprecated
+         */
+        async function methodCallTypeTests() {
             const messenger = createIframeMessenger<ExampleMessageData>({allowedOrigins: ['']});
             try {
                 // @ts-expect-error
@@ -141,6 +147,34 @@ describe(createIframeMessenger.name, () => {
             } catch (error) {}
         }
     });
+    it('has proper type constraints in listenForParentMessages', async () => {
+        /**
+         * Don't actually call this function, it's being used for type testing purposes and
+         * shouldn't actually be called in the tests because they will all error.
+         *
+         * @deprecated
+         */
+        function methodCallTypeTests() {
+            const messenger = createIframeMessenger<ExampleMessageData>({allowedOrigins: ['']});
+            try {
+                // narrows message types by their type property
+                messenger.listenForParentMessages((message): any => {
+                    if (message.type === ExampleMessageType.ForceSize) {
+                        assertTypeOf(message.data).toEqualTypeOf<Dimensions | undefined>();
+                    } else if (message.type === ExampleMessageType.Ready) {
+                        assertTypeOf(message.data).toEqualTypeOf<undefined>();
+                    }
+                });
+
+                /**
+                 * Fails if the callback doesn't return anything when the message data requires a
+                 * response from the child for at least one message type.
+                 */
+                // @ts-expect-error
+                messenger.listenForParentMessages((message) => {});
+            } catch (error) {}
+        }
+    });
 
     it('fails if the iframe never loads (cause it has no src url yet)', async () => {
         const {iframe, messenger} = await setupTest();
@@ -173,10 +207,10 @@ describe(createIframeMessenger.name, () => {
                     <script>
                         window.addEventListener('message', (event) => {
                             const message = event.data;
-                            if (message.direction === '${MessageDirection.FromParent}') {
+                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
                                 window.postMessage({
                                     type: message.type,
-                                    direction: '${MessageDirection.FromChild}',
+                                    direction: '${MessageDirectionEnum.FromChild}',
                                     data: undefined,
                                 });
                             }
