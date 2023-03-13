@@ -3,4 +3,5 @@ import {defineConfig} from 'vite';
 
 export default defineConfig({
     ...baseViteConfig,
+    base: process.env.CI ? 'interlocking-iframe-messenger' : '',
 });
