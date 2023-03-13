@@ -102,7 +102,7 @@ describe(createIframeMessenger.name, () => {
                     message: {
                         type: ExampleMessageType.SendSize,
                     },
-                    verifyData: () => {
+                    verifyChildData: () => {
                         return true;
                     },
                 });
@@ -115,7 +115,7 @@ describe(createIframeMessenger.name, () => {
                     },
                     // ExampleMessageType.SendScalingMethod has no child data, a data verifier is not allowed
                     // @ts-expect-error
-                    verifyData: () => {
+                    verifyChildData: () => {
                         return true;
                     },
                 });

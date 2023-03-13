@@ -85,7 +85,7 @@ export const VirDemoParent = defineElementNoInputs({
                                     message: {
                                         type: 'requestNumberFromChild',
                                     },
-                                    verifyData: (data) => {
+                                    verifyChildData: (data) => {
                                         return typeof data === 'number';
                                     },
                                 }),
@@ -133,7 +133,7 @@ export const VirDemoParent = defineElementNoInputs({
                                 message: {
                                     type: 'requestNumberFromChild',
                                 },
-                                verifyData: (data) => {
+                                verifyChildData: (data) => {
                                     return typeof data === 'number';
                                 },
                             }),

@@ -54,9 +54,9 @@ type GenericSendMessageInputs<
     MessageDataOptions,
     MessageDirectionEnum.FromChild
 >['data'] extends undefined
-    ? {verifyData?: undefined}
+    ? {verifyChildData?: undefined}
     : {
-          verifyData: (
+          verifyChildData: (
               data: Readonly<
                   Message<MessageType, MessageDataOptions, MessageDirectionEnum.FromChild>['data']
               >,
@@ -200,7 +200,7 @@ function calculateAttemptWaitDuration(attemptCount: number) {
 }
 
 async function sendPingPongMessage(
-    {message: messageToSend, verifyData, iframeElement}: GenericSendMessageInputs<any, any>,
+    {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
     allowedOrigins: AllowedOrigins,
     maxAttemptCount: number,
 ): Promise<any> {
@@ -251,7 +251,9 @@ async function sendPingPongMessage(
             ) {
                 let isDataValid = false;
                 try {
-                    isDataValid = verifyData ? verifyData(receivedMessage.data as any) : true;
+                    isDataValid = verifyChildData
+                        ? verifyChildData(receivedMessage.data as any)
+                        : true;
                 } catch (error) {}
 
                 if (!isDataValid) {

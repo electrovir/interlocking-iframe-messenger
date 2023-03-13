@@ -1,8 +1,21 @@
 {
     "name": "interlocking-iframe-messenger",
-    "version": "0.0.0",
-    "description": "Handle messaging to and from an iframe without race conditions.",
-    "keywords": [],
+    "version": "1.0.0",
+    "description": "Post messages to a child iframe while accounting for race conditions.",
+    "keywords": [
+        "condition",
+        "data",
+        "event",
+        "iframe",
+        "interlocked",
+        "interlocking",
+        "message",
+        "messenger",
+        "postMessage",
+        "race condition",
+        "race conditions",
+        "race"
+    ],
     "homepage": "https://github.com/electrovir/interlocking-iframe-messenger",
     "bugs": {
         "url": "https://github.com/electrovir/interlocking-iframe-messenger/issues"
@@ -61,6 +74,7 @@
         "prettier-plugin-packagejson": "^2.4.3",
         "prettier-plugin-sort-json": "^1.0.0",
         "prettier-plugin-toml": "^0.3.1",
+        "typescript": "^4.9.5",
         "virmator": "^6.2.1",
         "vite": "^4.1.4"
     }
