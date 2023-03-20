@@ -1,12 +1,7 @@
 import {assertThrows, assertTypeOf, typedAssertInstanceOf} from '@augment-vir/browser-testing';
 import {convertTemplateToString} from '@augment-vir/element-vir';
-import {assert, fixture as renderFixture, html} from '@open-wc/testing';
-import {
-    AllowedOrigins,
-    AnyOrigin,
-    createIframeMessenger,
-    MessageDirectionEnum,
-} from './create-messenger';
+import {assert, html, fixture as renderFixture} from '@open-wc/testing';
+import {AllowedOrigins, AnyOrigin, MessageDirectionEnum, createIframeMessenger} from '..';
 import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
 
 async function setupTest(allowedOrigins: AllowedOrigins = AnyOrigin) {
@@ -245,16 +240,18 @@ describe(createIframeMessenger.name, () => {
 
         iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
 
-        const result = await messenger.sendMessageToChild({
-            iframeElement: iframe,
-            message: {
-                type: ExampleMessageType.SendScale,
-                data: {
-                    width: 11,
-                    height: 22,
+        const result: undefined = (
+            await messenger.sendMessageToChild({
+                iframeElement: iframe,
+                message: {
+                    type: ExampleMessageType.SendScale,
+                    data: {
+                        width: 11,
+                        height: 22,
+                    },
                 },
-            },
-        });
+            })
+        ).data;
 
         // undefined because the child responded with undefined as the message data
         assert.isUndefined(result);
@@ -299,7 +296,7 @@ describe(createIframeMessenger.name, () => {
         });
 
         // undefined because the child responded with undefined as the message data
-        assert.deepStrictEqual(result, {height: 1, width: 2});
+        assert.deepStrictEqual(result.data, {height: 1, width: 2});
     });
 
     it('fails if the child sends an error', async () => {
@@ -396,5 +393,44 @@ describe(createIframeMessenger.name, () => {
                 matchMessage: 'No iframe element was provided',
             },
         );
+    });
+
+    it('message from child with srcdoc has same origin as parent', async () => {
+        const {iframe, messenger} = await setupTest();
+
+        const iframeSrcDoc = html`
+            <html>
+                <head>
+                    <script>
+                        window.addEventListener('message', (event) => {
+                            const message = event.data;
+                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                                window.postMessage({
+                                    type: message.type,
+                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    data: undefined,
+                                });
+                            }
+                        });
+                    </script>
+                </head>
+                <body></body>
+            </html>
+        `;
+
+        iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
+
+        const output = await messenger.sendMessageToChild({
+            iframeElement: iframe,
+            message: {
+                type: ExampleMessageType.SendScale,
+                data: {
+                    width: 11,
+                    height: 22,
+                },
+            },
+        });
+
+        assert.include(output.event.origin, 'localhost');
     });
 });

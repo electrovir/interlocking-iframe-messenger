@@ -29,7 +29,7 @@ First, setup an iframeMessenger. Make sure to provide a list of allowed origins 
 
 Make sure to provide a generic type to `createIframeMessenger` so that your message data is typed. The given type should match a similar structure to `MessageData` shown below.
 
-<!-- example-link: src/demo/readme-examples/messenger-setup.example.ts -->
+<!-- example-link: src/readme-examples/messenger-setup.example.ts -->
 
 ```TypeScript
 import {createIframeMessenger, MessageDirectionEnum} from 'interlocking-iframe-messenger';
@@ -61,22 +61,24 @@ Use the `.sendMessageToChild()` method on `IframeMessenger` to send messages to 
 
 Based on the given message type, if data is expected from the child iframe, a `verifyChildData` function must be provided. This will get called internally by `sendMessageToChild` and if `verifyChildData` returns false, `sendMessageToChild` will fail.
 
-<!-- example-link: src/demo/readme-examples/parent-send-message.example.ts -->
+<!-- example-link: src/readme-examples/parent-send-message.example.ts -->
 
 ```TypeScript
 import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example';
 
 async function sendMyMessage(iframeElement: HTMLIFrameElement) {
-    const childValue = await myIframeMessenger.sendMessageToChild({
-        iframeElement,
-        message: {
-            type: MessageTypeEnum.RequestDataFromChild,
-        },
-        // if data is expected from the child, a verifyChildData function must be provided
-        verifyChildData(childData) {
-            return typeof childData === 'string';
-        },
-    });
+    const childValue: string = (
+        await myIframeMessenger.sendMessageToChild({
+            iframeElement,
+            message: {
+                type: MessageTypeEnum.RequestDataFromChild,
+            },
+            // if data is expected from the child, a verifyChildData function must be provided
+            verifyChildData(childData) {
+                return typeof childData === 'string';
+            },
+        })
+    ).data;
 
     // this will end up logging the string value that the child generated
     console.log({childValue});
@@ -92,7 +94,7 @@ sendMyMessage(
 
 Use `.listenForParentMessages()` in the child iframe source code to properly handle parent messages and respond when required. Notice that, in the example below, when the parent is expecting a response (when the type is `MessageTypeEnum.RequestDataFromChild`), the listener directly returns the data which the parent is expecting and waiting for.
 
-<!-- example-link: src/demo/readme-examples/child-listen-to-messages.example.ts -->
+<!-- example-link: src/readme-examples/child-listen-to-messages.example.ts -->
 
 ```TypeScript
 import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example';

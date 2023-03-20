@@ -80,15 +80,17 @@ export const VirDemoParent = defineElementNoInputs({
                     ${listen('click', async () => {
                         if (state.iframeElement) {
                             updateState({
-                                fromChildNumber: await demoIframeMessenger.sendMessageToChild({
-                                    iframeElement: state.iframeElement,
-                                    message: {
-                                        type: 'requestNumberFromChild',
-                                    },
-                                    verifyChildData: (data) => {
-                                        return typeof data === 'number';
-                                    },
-                                }),
+                                fromChildNumber: (
+                                    await demoIframeMessenger.sendMessageToChild({
+                                        iframeElement: state.iframeElement,
+                                        message: {
+                                            type: 'requestNumberFromChild',
+                                        },
+                                        verifyChildData: (data) => {
+                                            return typeof data === 'number';
+                                        },
+                                    })
+                                ).data,
                             });
                         }
                     })}
@@ -128,15 +130,17 @@ export const VirDemoParent = defineElementNoInputs({
                             },
                         });
                         updateState({
-                            fromChildNumber: await demoIframeMessenger.sendMessageToChild({
-                                iframeElement,
-                                message: {
-                                    type: 'requestNumberFromChild',
-                                },
-                                verifyChildData: (data) => {
-                                    return typeof data === 'number';
-                                },
-                            }),
+                            fromChildNumber: (
+                                await demoIframeMessenger.sendMessageToChild({
+                                    iframeElement,
+                                    message: {
+                                        type: 'requestNumberFromChild',
+                                    },
+                                    verifyChildData: (data) => {
+                                        return typeof data === 'number';
+                                    },
+                                })
+                            ).data,
                         });
                     })}
                 ></iframe>

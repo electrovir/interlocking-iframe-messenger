@@ -1,4 +1,4 @@
-import {createIframeMessenger, MessageDirectionEnum} from '../..';
+import {createIframeMessenger, MessageDirectionEnum} from '..';
 
 export enum MessageTypeEnum {
     RequestDataFromChild = 'request-data-from-child',
