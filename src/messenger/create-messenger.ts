@@ -65,6 +65,8 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                     MessageDirectionEnum.FromParent
                 > = messageEvent.data;
 
+                // ignore debug logging
+                /* c8 ignore start */
                 if (isDebugMode()) {
                     console.info(
                         'Received message from parent',
@@ -72,6 +74,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                         messageFromParent,
                     );
                 }
+                /* c8 ignore stop */
 
                 const responseData = await callback({
                     ...messageFromParent,
@@ -84,6 +87,8 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                     messageId: messageFromParent.messageId,
                 };
 
+                // ignore debug logging
+                /* c8 ignore start */
                 if (isDebugMode()) {
                     console.info(
                         'Sending message to parent',
@@ -91,6 +96,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                         messageForParent,
                     );
                 }
+                /* c8 ignore stop */
                 if (allowedOrigins === AnyOrigin) {
                     globalThis.parent.postMessage(messageForParent);
                 } else {

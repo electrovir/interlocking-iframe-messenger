@@ -1,3 +1,5 @@
+/* c8 ignore start */
+
 let debugMode = false;
 
 export function setDebugMode(enabled: boolean) {

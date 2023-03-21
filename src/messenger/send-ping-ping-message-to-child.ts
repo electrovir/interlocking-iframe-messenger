@@ -78,6 +78,8 @@ export async function sendPingPongMessageToChild(
                 throw new Error(`Child threw an error: ${receivedMessage.data}`);
             }
 
+            // ignore debug logging
+            /* c8 ignore start */
             if (isDebugMode()) {
                 console.info(
                     'Received message from child',
@@ -85,6 +87,7 @@ export async function sendPingPongMessageToChild(
                     receivedMessage,
                 );
             }
+            /* c8 ignore stop */
 
             if (
                 receivedMessage &&
@@ -123,6 +126,8 @@ export async function sendPingPongMessageToChild(
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
         if (iframeElement.contentWindow) {
+            // ignore debug logging
+            /* c8 ignore start */
             if (isDebugMode()) {
                 if (messagePosted) {
                     console.info('Re-sending message to child', fullMessageToSend.messageId);
@@ -134,6 +139,7 @@ export async function sendPingPongMessageToChild(
                     );
                 }
             }
+            /* c8 ignore stop */
             messagePosted = true;
             iframeElement.contentWindow.postMessage(fullMessageToSend);
         }
