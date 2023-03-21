@@ -65,10 +65,6 @@ export async function sendPingPongMessage(
 
             const receivedMessage: Message<any, any, any> = messageEvent.data;
 
-            if (receivedMessage.direction !== MessageDirectionEnum.FromChild) {
-                return;
-            }
-
             if (receivedMessage.type === 'error') {
                 throw new Error(`Child threw an error: ${receivedMessage.data}`);
             }
@@ -126,8 +122,10 @@ export async function sendPingPongMessage(
         );
     }
 
+    // no way to test this, just covering edge cases for types
+    /* c8 ignore next 3 */
     if (!responseEvent) {
-        throw new Error(`Never got message event from child but `);
+        throw new Error(`Never got message event from child but received a valid response`);
     }
 
     return {
