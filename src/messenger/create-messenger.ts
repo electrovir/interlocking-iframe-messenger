@@ -1,8 +1,9 @@
+import {isDebugMode} from '../debug-mode';
 import {assertAllowedOrigin} from './assert-allowed-origin';
 import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
 import {IframeMessenger, MessageDataBase} from './iframe-messenger';
 import {AnyOrigin, IframeMessengerOptions, MessageDirectionEnum} from './messenger-inputs';
-import {sendPingPongMessage} from './ping-ping-message';
+import {sendPingPongMessageToChild} from './send-ping-ping-message-to-child';
 
 export type Message<
     MessageType extends keyof MessageDataOptions,
@@ -12,6 +13,7 @@ export type Message<
     [SpecificMessageType in MessageType]: {
         type: SpecificMessageType;
         direction: MessageDirectionGeneric;
+        messageId: string;
     } & (undefined extends MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]
         ? {data?: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]}
         : {data: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]});
@@ -48,7 +50,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 );
             }
 
-            return await sendPingPongMessage(
+            return await sendPingPongMessageToChild(
                 inputs,
                 allowedOrigins,
                 inputs.maxAttemptCount || maxAttemptCount,
@@ -57,26 +59,38 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
         listenForParentMessages(callback) {
             globalThis.addEventListener('message', async (messageEvent) => {
                 assertAllowedOrigin(allowedOrigins, messageEvent);
-                const message: Message<
+                const messageFromParent: Message<
                     keyof MessageDataOptions,
                     MessageDataOptions,
                     MessageDirectionEnum.FromParent
                 > = messageEvent.data;
 
-                if (message.direction !== MessageDirectionEnum.FromParent) {
-                    return;
+                if (isDebugMode()) {
+                    console.info(
+                        'Received message from parent',
+                        messageFromParent.messageId,
+                        messageFromParent,
+                    );
                 }
 
                 const responseData = await callback({
-                    ...message,
+                    ...messageFromParent,
                     originalEvent: messageEvent,
                 });
-                const messageForParent = {
-                    type: message.type,
+                const messageForParent: Message<any, any, MessageDirectionEnum.FromChild> = {
+                    type: messageFromParent.type,
                     direction: MessageDirectionEnum.FromChild,
                     data: responseData,
+                    messageId: messageFromParent.messageId,
                 };
 
+                if (isDebugMode()) {
+                    console.info(
+                        'Sending message to parent',
+                        messageForParent.messageId,
+                        messageForParent,
+                    );
+                }
                 if (allowedOrigins === AnyOrigin) {
                     globalThis.parent.postMessage(messageForParent);
                 } else {

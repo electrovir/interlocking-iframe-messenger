@@ -226,6 +226,7 @@ describe(createIframeMessenger.name, () => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
+                                    messageId: message.messageId,
                                     type: message.type,
                                     direction: '${MessageDirectionEnum.FromChild}',
                                     data: undefined,
@@ -268,6 +269,7 @@ describe(createIframeMessenger.name, () => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
+                                    messageId: message.messageId,
                                     type: message.type,
                                     direction: '${MessageDirectionEnum.FromChild}',
                                     data: {height: 1, width: 2},
@@ -310,6 +312,7 @@ describe(createIframeMessenger.name, () => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
+                                    messageId: message.messageId,
                                     type: 'error',
                                     direction: '${MessageDirectionEnum.FromChild}',
                                 });
@@ -406,6 +409,7 @@ describe(createIframeMessenger.name, () => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
+                                    messageId: message.messageId,
                                     type: message.type,
                                     direction: '${MessageDirectionEnum.FromChild}',
                                     data: undefined,

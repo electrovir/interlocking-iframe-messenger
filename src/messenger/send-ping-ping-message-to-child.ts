@@ -1,4 +1,6 @@
+import {randomString} from '@augment-vir/browser';
 import {ensureError, wait} from '@augment-vir/common';
+import {isDebugMode} from '../debug-mode';
 import {assertAllowedOrigin} from './assert-allowed-origin';
 import {Message} from './create-messenger';
 import {MessageDataBase} from './iframe-messenger';
@@ -17,9 +19,15 @@ function isMessageKind<
 }
 
 function calculateAttemptWaitDuration(attemptCount: number) {
-    const waitDuration = Math.min(Math.floor(Math.pow(attemptCount, 3)), 5000);
-
-    return waitDuration;
+    if (attemptCount < 2) {
+        return 10;
+    } else if (attemptCount < 5) {
+        return 100;
+    } else if (attemptCount < 10) {
+        return 1000;
+    } else {
+        return 5000;
+    }
 }
 
 // // use this to test all delay times
@@ -29,7 +37,7 @@ function calculateAttemptWaitDuration(attemptCount: number) {
 //         .map((value, index) => calculateAttemptWaitDuration(index)),
 // );
 
-export async function sendPingPongMessage(
+export async function sendPingPongMessageToChild(
     {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
     allowedOrigins: AllowedOrigins,
     maxAttemptCount: number,
@@ -55,6 +63,7 @@ export async function sendPingPongMessage(
     } = {
         ...messageToSend,
         direction: MessageDirectionEnum.FromParent,
+        messageId: randomString(32),
     };
 
     const expectedMessageType = messageToSend.type;
@@ -69,10 +78,23 @@ export async function sendPingPongMessage(
                 throw new Error(`Child threw an error: ${receivedMessage.data}`);
             }
 
+            if (isDebugMode()) {
+                console.info(
+                    'Received message from child',
+                    receivedMessage.messageId,
+                    receivedMessage,
+                );
+            }
+
             if (
                 receivedMessage &&
                 messagePosted &&
-                isMessageKind(expectedMessageType, MessageDirectionEnum.FromChild, receivedMessage)
+                isMessageKind(
+                    expectedMessageType,
+                    MessageDirectionEnum.FromChild,
+                    receivedMessage,
+                ) &&
+                receivedMessage.messageId === fullMessageToSend.messageId
             ) {
                 let isDataValid = false;
                 try {
@@ -101,6 +123,17 @@ export async function sendPingPongMessage(
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
         if (iframeElement.contentWindow) {
+            if (isDebugMode()) {
+                if (messagePosted) {
+                    console.info('Re-sending message to child', fullMessageToSend.messageId);
+                } else {
+                    console.info(
+                        'Sending message to child',
+                        fullMessageToSend.messageId,
+                        fullMessageToSend,
+                    );
+                }
+            }
             messagePosted = true;
             iframeElement.contentWindow.postMessage(fullMessageToSend);
         }

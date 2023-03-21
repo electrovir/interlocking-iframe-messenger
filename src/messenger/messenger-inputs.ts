@@ -17,7 +17,7 @@ export type GenericSendMessageInputs<
              */
             MessageDirectionEnum.FromParent
         >,
-        'direction'
+        'direction' | 'messageId'
     >;
 } & (Message<
     MessageType,
