@@ -66,7 +66,7 @@
         "element-vir": "^9.2.3",
         "istanbul-smart-text-reporter": "^1.1.1",
         "markdown-code-example-inserter": "^0.3.0",
-        "prettier": "^2.8.5",
+        "prettier": "^2.8.6",
         "prettier-plugin-interpolated-html-tags": "^0.0.3",
         "prettier-plugin-jsdoc": "^0.4.2",
         "prettier-plugin-multiline-arrays": "^1.1.3",
