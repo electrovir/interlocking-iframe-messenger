@@ -4,7 +4,12 @@ import {isDebugMode} from '../debug-mode';
 import {assertAllowedOrigin} from './assert-allowed-origin';
 import {Message} from './create-messenger';
 import {MessageDataBase} from './iframe-messenger';
-import {AllowedOrigins, GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
+import {
+    AllowedOrigins,
+    AnyOrigin,
+    GenericSendMessageInputs,
+    MessageDirectionEnum,
+} from './messenger-inputs';
 
 function isMessageKind<
     SpecificMessageType extends keyof MessageDataOptions,
@@ -67,6 +72,7 @@ export async function sendPingPongMessageToChild(
     };
 
     const expectedMessageType = messageToSend.type;
+    const allowedOriginsArray = allowedOrigins === AnyOrigin ? ['*'] : allowedOrigins;
 
     function responseListener(messageEvent: MessageEvent<any>) {
         try {
@@ -125,7 +131,9 @@ export async function sendPingPongMessageToChild(
     const startTime = Date.now();
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
-        if (iframeElement.contentWindow) {
+        const iframeWindow = iframeElement.contentWindow;
+
+        if (iframeWindow) {
             // ignore debug logging
             /* c8 ignore start */
             if (isDebugMode()) {
@@ -141,7 +149,11 @@ export async function sendPingPongMessageToChild(
             }
             /* c8 ignore stop */
             messagePosted = true;
-            iframeElement.contentWindow.postMessage(fullMessageToSend);
+            allowedOriginsArray.forEach((targetOrigin) => {
+                try {
+                    iframeWindow.postMessage(fullMessageToSend, {targetOrigin});
+                } catch (error) {}
+            });
         }
         await wait(calculateAttemptWaitDuration(tryCount));
         tryCount++;

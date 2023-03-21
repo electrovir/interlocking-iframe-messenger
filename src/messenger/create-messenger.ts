@@ -42,6 +42,8 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
         );
     }
 
+    const allowedOriginsArray = allowedOrigins === AnyOrigin ? ['*'] : allowedOrigins;
+
     return {
         async sendMessageToChild(inputs) {
             if (inputs.message.type === 'error') {
@@ -97,13 +99,12 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                     );
                 }
                 /* c8 ignore stop */
-                if (allowedOrigins === AnyOrigin) {
-                    globalThis.parent.postMessage(messageForParent);
-                } else {
-                    allowedOrigins.forEach((targetOrigin) => {
+
+                allowedOriginsArray.forEach((targetOrigin) => {
+                    try {
                         globalThis.parent.postMessage(messageForParent, {targetOrigin});
-                    });
-                }
+                    } catch (error) {}
+                });
             });
         },
     };

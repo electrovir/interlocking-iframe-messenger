@@ -9,6 +9,10 @@ export function assertAllowedOrigin(allowedOrigins: AllowedOrigins, messageEvent
     );
 
     if (!matchedOrigins.length) {
-        throw new Error(`Received message from invalid origin: ${messageEvent.origin}`);
+        throw new Error(
+            `Received message from invalid origin: ${
+                messageEvent.origin
+            }. Expected '[${allowedOrigins.join(', ')}]'`,
+        );
     }
 }
