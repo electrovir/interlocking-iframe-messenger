@@ -222,10 +222,10 @@ describe(createIframeMessenger.name, () => {
             <html>
                 <head>
                     <script>
-                        window.addEventListener('message', (event) => {
+                        globalThis.addEventListener('message', (event) => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
-                                window.postMessage({
+                                globalThis.parent.postMessage({
                                     type: message.type,
                                     direction: '${MessageDirectionEnum.FromChild}',
                                     data: undefined,
@@ -264,10 +264,10 @@ describe(createIframeMessenger.name, () => {
             <html>
                 <head>
                     <script>
-                        window.addEventListener('message', (event) => {
+                        globalThis.addEventListener('message', (event) => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
-                                window.postMessage({
+                                globalThis.parent.postMessage({
                                     type: message.type,
                                     direction: '${MessageDirectionEnum.FromChild}',
                                     data: {height: 1, width: 2},
@@ -306,10 +306,10 @@ describe(createIframeMessenger.name, () => {
             <html>
                 <head>
                     <script>
-                        window.addEventListener('message', (event) => {
+                        globalThis.addEventListener('message', (event) => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
-                                window.postMessage({
+                                globalThis.parent.postMessage({
                                     type: 'error',
                                     direction: '${MessageDirectionEnum.FromChild}',
                                 });
@@ -402,10 +402,10 @@ describe(createIframeMessenger.name, () => {
             <html>
                 <head>
                     <script>
-                        window.addEventListener('message', (event) => {
+                        globalThis.addEventListener('message', (event) => {
                             const message = event.data;
                             if (message.direction === '${MessageDirectionEnum.FromParent}') {
-                                window.postMessage({
+                                globalThis.parent.postMessage({
                                     type: message.type,
                                     direction: '${MessageDirectionEnum.FromChild}',
                                     data: undefined,

@@ -98,27 +98,21 @@ export async function sendPingPongMessage(
         }
     }
 
-    let previousContext: Window | null | undefined = undefined;
+    // listen on the current window for responses from the child
+    globalThis.addEventListener('message', responseListener);
 
     const startTime = Date.now();
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
-        const newContext = iframeElement.contentWindow;
-
-        if (newContext) {
-            previousContext?.removeEventListener('message', responseListener);
-            newContext.addEventListener('message', responseListener);
-            if (newContext !== previousContext) {
-                previousContext = newContext;
-            }
+        if (iframeElement.contentWindow) {
             messagePosted = true;
-            newContext.postMessage(fullMessageToSend);
+            iframeElement.contentWindow.postMessage(fullMessageToSend);
         }
         await wait(calculateAttemptWaitDuration(tryCount));
         tryCount++;
     }
     const attemptDuration = Date.now() - startTime;
-    previousContext?.removeEventListener('message', responseListener);
+    globalThis.removeEventListener('message', responseListener);
 
     if (listenerError) {
         throw listenerError;

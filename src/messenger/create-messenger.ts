@@ -78,10 +78,10 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 };
 
                 if (allowedOrigins === AnyOrigin) {
-                    globalThis.postMessage(messageForParent);
+                    globalThis.parent.postMessage(messageForParent);
                 } else {
                     allowedOrigins.forEach((targetOrigin) => {
-                        globalThis.postMessage(messageForParent, {targetOrigin});
+                        globalThis.parent.postMessage(messageForParent, {targetOrigin});
                     });
                 }
             });
