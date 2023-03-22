@@ -131,6 +131,9 @@ export async function sendPingPongMessageToChild(
     const startTime = Date.now();
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
+        if (!iframeElement.isConnected) {
+            throw new Error(`Iframe is no longer attached to the DOM.`);
+        }
         const iframeWindow = iframeElement.contentWindow;
 
         if (iframeWindow) {
