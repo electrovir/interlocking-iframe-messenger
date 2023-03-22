@@ -1,6 +1,7 @@
 import {randomString} from '@augment-vir/browser';
 import {ensureError, wait} from '@augment-vir/common';
 import {isDebugMode} from '../debug-mode';
+import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
 import {assertAllowedOrigin} from './assert-allowed-origin';
 import {Message} from './create-messenger';
 import {MessageDataBase} from './iframe-messenger';
@@ -132,7 +133,7 @@ export async function sendPingPongMessageToChild(
 
     while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
         if (!iframeElement.isConnected) {
-            throw new Error(`Iframe is no longer attached to the DOM.`);
+            throw new IframeDisconnectedError();
         }
         const iframeWindow = iframeElement.contentWindow;
 
