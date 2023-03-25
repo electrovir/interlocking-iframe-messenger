@@ -46,7 +46,7 @@ function calculateAttemptWaitDuration(attemptCount: number) {
 export async function sendPingPongMessageToChild(
     {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
     allowedOrigins: AllowedOrigins,
-    maxAttemptCount: number,
+    timeoutMs: number,
 ): Promise<{data: any; event: MessageEvent}> {
     if (!iframeElement) {
         throw new Error(`No iframe element was provided.`);
@@ -131,7 +131,7 @@ export async function sendPingPongMessageToChild(
 
     const startTime = Date.now();
 
-    while (!validResponseReceived && tryCount < maxAttemptCount && !listenerError) {
+    while (!validResponseReceived && Date.now() - startTime < timeoutMs && !listenerError) {
         if (!iframeElement.isConnected) {
             throw new IframeDisconnectedError();
         }
@@ -173,7 +173,7 @@ export async function sendPingPongMessageToChild(
         throw new Error(
             `Failed to receive response from the iframe for message '${
                 messageToSend.type
-            }' after '${maxAttemptCount}' tries ('${Math.floor(attemptDuration / 1000)}' seconds).`,
+            }' after '${Math.ceil(timeoutMs / 1000)}' seconds).`,
         );
     }
 

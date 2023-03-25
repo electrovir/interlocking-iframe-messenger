@@ -185,7 +185,7 @@ describe(createIframeMessenger.name, () => {
                             height: 22,
                         },
                     },
-                    maxAttemptCount: 2,
+                    timeoutMs: 100,
                 }),
             {
                 matchConstructor: Error,
@@ -207,7 +207,7 @@ describe(createIframeMessenger.name, () => {
                             height: 22,
                         },
                     },
-                    maxAttemptCount: 2,
+                    timeoutMs: 100,
                 }),
             {
                 matchConstructor: Error,
@@ -336,7 +336,7 @@ describe(createIframeMessenger.name, () => {
                     verifyChildData() {
                         return true;
                     },
-                    maxAttemptCount: 5,
+                    timeoutMs: 100,
                 }),
             {
                 matchMessage: 'Child threw an error',
@@ -368,7 +368,7 @@ describe(createIframeMessenger.name, () => {
                             height: 22,
                         },
                     },
-                    maxAttemptCount: 2,
+                    timeoutMs: 100,
                 }),
             {
                 matchConstructor: Error,
@@ -390,7 +390,7 @@ describe(createIframeMessenger.name, () => {
                             height: 22,
                         },
                     },
-                    maxAttemptCount: 2,
+                    timeoutMs: 100,
                 }),
             {
                 matchMessage: 'No iframe element was provided',

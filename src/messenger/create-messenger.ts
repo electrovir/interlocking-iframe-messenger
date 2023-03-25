@@ -21,7 +21,7 @@ export type Message<
 
 export function createIframeMessenger<MessageDataOptions extends MessageDataBase>({
     allowedOrigins,
-    maxAttemptCount = 10,
+    timeoutMs = 10_000,
     ...otherOptions
 }: IframeMessengerOptions): IframeMessenger<MessageDataOptions> {
     if (allowedOrigins !== AnyOrigin && allowedOrigins.includes('*')) {
@@ -55,7 +55,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
             return await sendPingPongMessageToChild(
                 inputs,
                 allowedOrigins,
-                inputs.maxAttemptCount || maxAttemptCount,
+                inputs.timeoutMs || timeoutMs,
             );
         },
         listenForParentMessages(callback) {

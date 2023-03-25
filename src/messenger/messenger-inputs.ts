@@ -6,7 +6,7 @@ export type GenericSendMessageInputs<
     MessageDataOptions extends MessageDataBase,
 > = {
     iframeElement: HTMLIFrameElement;
-    maxAttemptCount?: number | undefined;
+    timeoutMs?: number | undefined;
     message: Omit<
         Message<
             MessageType,
@@ -45,10 +45,10 @@ export type IframeMessengerOptions = {
      */
     allowedOrigins: AllowedOrigins;
     /**
-     * The maximum amount of times that the messenger will try to send and receive a response from
-     * the iframe. This defaults to 10.
+     * The maximum amount of time in milliseconds that the messenger will wait for a response to
+     * come back from the iframe. This defaults to 10,000 milliseconds (10 seconds).
      */
-    maxAttemptCount?: number | undefined;
+    timeoutMs?: number | undefined;
 };
 
 /**
