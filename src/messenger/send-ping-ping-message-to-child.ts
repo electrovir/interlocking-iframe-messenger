@@ -2,7 +2,7 @@ import {randomString} from '@augment-vir/browser';
 import {ensureError, wait} from '@augment-vir/common';
 import {isDebugMode} from '../debug-mode';
 import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
-import {assertAllowedOrigin} from './assert-allowed-origin';
+import {isAllowedOrigin} from './assert-allowed-origin';
 import {Message} from './create-messenger';
 import {MessageDataBase} from './iframe-messenger';
 import {
@@ -77,7 +77,9 @@ export async function sendPingPongMessageToChild(
 
     function responseListener(messageEvent: MessageEvent<any>) {
         try {
-            assertAllowedOrigin(allowedOrigins, messageEvent);
+            if (!isAllowedOrigin(allowedOrigins, messageEvent)) {
+                return;
+            }
 
             const receivedMessage: Message<any, any, any> = messageEvent.data;
 

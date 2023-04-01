@@ -1,5 +1,5 @@
 import {isDebugMode} from '../debug-mode';
-import {assertAllowedOrigin} from './assert-allowed-origin';
+import {isAllowedOrigin} from './assert-allowed-origin';
 import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
 import {IframeMessenger, MessageDataBase} from './iframe-messenger';
 import {AnyOrigin, IframeMessengerOptions, MessageDirectionEnum} from './messenger-inputs';
@@ -60,7 +60,9 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
         },
         listenForParentMessages(callback) {
             globalThis.addEventListener('message', async (messageEvent) => {
-                assertAllowedOrigin(allowedOrigins, messageEvent);
+                if (!isAllowedOrigin(allowedOrigins, messageEvent)) {
+                    return;
+                }
                 const messageFromParent: Message<
                     keyof MessageDataOptions,
                     MessageDataOptions,

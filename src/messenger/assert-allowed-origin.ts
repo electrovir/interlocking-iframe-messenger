@@ -1,6 +1,15 @@
 import {AllowedOrigins, AnyOrigin} from './messenger-inputs';
 
-export function assertAllowedOrigin(allowedOrigins: AllowedOrigins, messageEvent: MessageEvent) {
+export function isAllowedOrigin(allowedOrigins: AllowedOrigins, messageEvent: MessageEvent) {
+    try {
+        assertAllowedOrigin(allowedOrigins, messageEvent);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+function assertAllowedOrigin(allowedOrigins: AllowedOrigins, messageEvent: MessageEvent) {
     if (allowedOrigins === AnyOrigin) {
         return;
     }
