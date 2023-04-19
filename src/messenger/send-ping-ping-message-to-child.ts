@@ -36,17 +36,11 @@ function calculateAttemptWaitDuration(attemptCount: number) {
     }
 }
 
-// // use this to test all delay times
-// console.info(
-//     Array(20)
-//         .fill(0)
-//         .map((value, index) => calculateAttemptWaitDuration(index)),
-// );
-
 export async function sendPingPongMessageToChild(
     {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
     allowedOrigins: AllowedOrigins,
     timeoutMs: number,
+    intervalMs: number | undefined,
 ): Promise<{data: any; event: MessageEvent}> {
     if (!iframeElement) {
         throw new Error(`No iframe element was provided.`);
@@ -161,7 +155,7 @@ export async function sendPingPongMessageToChild(
                 } catch (error) {}
             });
         }
-        await wait(calculateAttemptWaitDuration(tryCount));
+        await wait(intervalMs || calculateAttemptWaitDuration(tryCount));
         tryCount++;
     }
     const attemptDuration = Date.now() - startTime;

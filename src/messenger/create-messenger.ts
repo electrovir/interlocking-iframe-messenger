@@ -56,6 +56,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 inputs,
                 allowedOrigins,
                 inputs.timeoutMs || timeoutMs,
+                inputs.intervalMs,
             );
         },
         listenForParentMessages(callback) {

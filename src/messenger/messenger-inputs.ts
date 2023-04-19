@@ -7,6 +7,7 @@ export type GenericSendMessageInputs<
 > = {
     iframeElement: HTMLIFrameElement;
     timeoutMs?: number | undefined;
+    intervalMs?: number | undefined;
     message: Omit<
         Message<
             MessageType,
