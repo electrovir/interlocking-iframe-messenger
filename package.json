@@ -24,7 +24,7 @@
         "type": "git",
         "url": "https://github.com/electrovir/interlocking-iframe-messenger"
     },
-    "license": "MIT",
+    "license": "(MIT or CC0 1.0)",
     "author": {
         "name": "electrovir",
         "url": "https://github.com/electrovir"
@@ -48,22 +48,22 @@
         "test:types": "tsc --noEmit"
     },
     "dependencies": {
-        "@augment-vir/common": "^13.2.2"
+        "@augment-vir/common": "^13.2.4"
     },
     "devDependencies": {
-        "@augment-vir/browser": "^13.2.2",
-        "@augment-vir/browser-testing": "^13.2.2",
-        "@augment-vir/element-vir": "^13.2.2",
-        "@augment-vir/node-js": "^13.2.2",
-        "@open-wc/testing": "^3.1.7",
+        "@augment-vir/browser": "^13.2.4",
+        "@augment-vir/browser-testing": "^13.2.4",
+        "@augment-vir/element-vir": "^13.2.4",
+        "@augment-vir/node-js": "^13.2.4",
+        "@open-wc/testing": "^3.1.8",
         "@types/mocha": "^10.0.1",
-        "@web/dev-server-esbuild": "^0.3.5",
-        "@web/test-runner": "^0.15.2",
-        "@web/test-runner-commands": "^0.6.5",
+        "@web/dev-server-esbuild": "^0.3.6",
+        "@web/test-runner": "^0.15.3",
+        "@web/test-runner-commands": "^0.6.6",
         "@web/test-runner-playwright": "^0.9.0",
-        "@web/test-runner-visual-regression": "^0.7.0",
+        "@web/test-runner-visual-regression": "^0.7.1",
         "cspell": "^6.31.1",
-        "element-vir": "^11.0.1",
+        "element-vir": "^12.0.0",
         "istanbul-smart-text-reporter": "^1.1.1",
         "markdown-code-example-inserter": "^0.3.0",
         "prettier": "^2.8.7",
@@ -74,8 +74,8 @@
         "prettier-plugin-packagejson": "^2.4.3",
         "prettier-plugin-sort-json": "^1.0.0",
         "prettier-plugin-toml": "^0.3.1",
-        "typescript": "^5.0.3",
-        "virmator": "^6.2.3",
-        "vite": "^4.2.1"
+        "typescript": "^5.0.4",
+        "virmator": "^6.4.3",
+        "vite": "^4.2.2"
     }
 }
