@@ -1,6 +1,6 @@
 {
     "name": "interlocking-iframe-messenger",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "Post messages to a child iframe while accounting for race conditions.",
     "keywords": [
         "condition",
@@ -64,8 +64,10 @@
         "@web/test-runner-visual-regression": "^0.7.1",
         "cspell": "^6.31.1",
         "element-vir": "^12.0.0",
+        "esbuild": "^0.17.17",
         "istanbul-smart-text-reporter": "^1.1.1",
         "markdown-code-example-inserter": "^0.3.0",
+        "npm-check-updates": "^16.10.8",
         "prettier": "^2.8.7",
         "prettier-plugin-interpolated-html-tags": "^0.0.3",
         "prettier-plugin-jsdoc": "^0.4.2",
@@ -76,6 +78,6 @@
         "prettier-plugin-toml": "^0.3.1",
         "typescript": "^5.0.4",
         "virmator": "^6.4.3",
-        "vite": "^4.2.2"
+        "vite": "^4.3.1"
     }
 }
