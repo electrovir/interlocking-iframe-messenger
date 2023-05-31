@@ -6,7 +6,7 @@ import {childMarker} from '../../services/env/is-child';
 
 export const VirDemoParent = defineElementNoInputs({
     tagName: 'vir-demo-parent',
-    stateInit: {
+    stateInitStatic: {
         parentString: randomString(),
         fromChildNumber: undefined as number | undefined,
         iframeElement: undefined as HTMLIFrameElement | undefined,

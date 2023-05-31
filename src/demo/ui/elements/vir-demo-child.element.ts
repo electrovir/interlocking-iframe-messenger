@@ -11,7 +11,7 @@ function createRandomChildNumber() {
 
 export const VirDemoChild = defineElementNoInputs({
     tagName: 'vir-demo-child',
-    stateInit: {
+    stateInitStatic: {
         fromParentString: '',
         childNumber: createRandomChildNumber(),
     },
