@@ -1,6 +1,6 @@
 {
     "name": "interlocking-iframe-messenger",
-    "version": "4.0.2",
+    "version": "4.0.3",
     "description": "Post messages to a child iframe while accounting for race conditions.",
     "keywords": [
         "condition",
@@ -34,7 +34,7 @@
     "types": "dist/types/index.d.ts",
     "scripts": {
         "build": "virmator frontend build",
-        "compile": "tsc --project tsconfig.json && tsc --project tsconfig.cjs.json",
+        "compile": "virmator compile",
         "docs:update": "virmator code-in-markdown --index src/index.ts README.md",
         "format": "virmator format",
         "preview": "virmator frontend preview",
@@ -49,10 +49,10 @@
         "test:types": "tsc --noEmit"
     },
     "dependencies": {
+        "@augment-vir/browser": "^15.3.0",
         "@augment-vir/common": "^15.3.0"
     },
     "devDependencies": {
-        "@augment-vir/browser": "^15.3.0",
         "@augment-vir/browser-testing": "^15.3.0",
         "@augment-vir/element-vir": "^15.3.0",
         "@augment-vir/node-js": "^15.3.0",
