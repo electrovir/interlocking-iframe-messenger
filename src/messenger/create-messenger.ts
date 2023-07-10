@@ -1,8 +1,7 @@
 import {isDebugMode} from '../debug-mode';
-import {isAllowedOrigin} from './assert-allowed-origin';
-import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
+import {isAllowedOrigin} from './allowed-origin';
 import {IframeMessenger, MessageDataBase} from './iframe-messenger';
-import {AnyOrigin, IframeMessengerOptions, MessageDirectionEnum} from './messenger-inputs';
+import {IframeMessengerOptions, MessageDirectionEnum} from './messenger-inputs';
 import {sendPingPongMessageToChild} from './send-ping-ping-message-to-child';
 
 export type Message<
@@ -19,31 +18,9 @@ export type Message<
         : {data: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]});
 }[MessageType];
 
-export function createIframeMessenger<MessageDataOptions extends MessageDataBase>({
-    allowedOrigins,
-    timeoutMs = 10_000,
-    ...otherOptions
-}: IframeMessengerOptions): IframeMessenger<MessageDataOptions> {
-    if (allowedOrigins !== AnyOrigin && allowedOrigins.includes('*')) {
-        allowedOrigins = AnyOrigin;
-    }
-    if (
-        allowedOrigins === AnyOrigin &&
-        !(otherOptions as any)[dangerDisableSecurityWarningsSymbol]
-    ) {
-        console.warn(
-            "Creating iframe messenger with any origin allowed ('*'). This is insecure, please provide an actual list of allowed origins.",
-        );
-    }
-
-    if (allowedOrigins !== AnyOrigin && !allowedOrigins.length) {
-        throw new Error(
-            `No allowed origins were provide to ${createIframeMessenger.name}. At least one must be provided.`,
-        );
-    }
-
-    const allowedOriginsArray = allowedOrigins === AnyOrigin ? ['*'] : allowedOrigins;
-
+export function createIframeMessenger<MessageDataOptions extends MessageDataBase>(
+    {timeoutMs = 10_000}: IframeMessengerOptions = {timeoutMs: 10_000},
+): IframeMessenger<MessageDataOptions> {
     return {
         async sendMessageToChild(inputs) {
             if (inputs.message.type === 'error') {
@@ -54,14 +31,14 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
 
             return await sendPingPongMessageToChild(
                 inputs,
-                allowedOrigins,
+                inputs.childOrigin,
                 inputs.timeoutMs || timeoutMs,
                 inputs.intervalMs,
             );
         },
-        listenForParentMessages(callback) {
+        listenForParentMessages(inputs) {
             globalThis.addEventListener('message', async (messageEvent) => {
-                if (!isAllowedOrigin(allowedOrigins, messageEvent)) {
+                if (!isAllowedOrigin(inputs.parentOrigin, messageEvent)) {
                     return;
                 }
                 const messageFromParent: Message<
@@ -81,7 +58,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 }
                 /* c8 ignore stop */
 
-                const responseData = await callback({
+                const responseData = await inputs.listener({
                     ...messageFromParent,
                     originalEvent: messageEvent,
                 });
@@ -103,10 +80,8 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 }
                 /* c8 ignore stop */
 
-                allowedOriginsArray.forEach((targetOrigin) => {
-                    try {
-                        globalThis.parent.postMessage(messageForParent, {targetOrigin});
-                    } catch (error) {}
+                globalThis.parent.postMessage(messageForParent, {
+                    targetOrigin: inputs.parentOrigin,
                 });
             });
         },

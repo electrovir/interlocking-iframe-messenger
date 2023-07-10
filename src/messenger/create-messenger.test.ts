@@ -1,10 +1,9 @@
 import {assertThrows, assertTypeOf, typedAssertInstanceOf} from '@augment-vir/browser-testing';
 import {convertTemplateToString} from '@augment-vir/element-vir';
 import {assert, html, fixture as renderFixture} from '@open-wc/testing';
-import {AllowedOrigins, AnyOrigin, MessageDirectionEnum, createIframeMessenger} from '..';
-import {dangerDisableSecurityWarningsSymbol} from './danger-disable-security-warnings';
+import {MessageDirectionEnum, createIframeMessenger} from '..';
 
-async function setupTest(allowedOrigins: AllowedOrigins = AnyOrigin) {
+async function setupTest() {
     const iframeElement = await renderFixture(
         html`
             <iframe></iframe>
@@ -12,10 +11,7 @@ async function setupTest(allowedOrigins: AllowedOrigins = AnyOrigin) {
     );
     typedAssertInstanceOf(iframeElement, HTMLIFrameElement);
 
-    const messenger = createIframeMessenger<ExampleMessageData>({
-        allowedOrigins,
-        ...{[dangerDisableSecurityWarningsSymbol]: true},
-    });
+    const messenger = createIframeMessenger<ExampleMessageData>();
 
     return {
         iframe: iframeElement,
@@ -69,16 +65,19 @@ describe(createIframeMessenger.name, () => {
          * Don't actually call this function, it's being used for type testing purposes and
          * shouldn't actually be called in the tests because they will all error.
          *
+         * Also don't remove this function due to it not being used :)
+         *
          * @deprecated
          */
         async function methodCallTypeTests() {
-            const messenger = createIframeMessenger<ExampleMessageData>({allowedOrigins: ['']});
+            const messenger = createIframeMessenger<ExampleMessageData>();
             try {
                 // @ts-expect-error
                 await messenger.sendMessageToChild();
                 // should allow ExampleMessageType.Ready without any data or data verifier
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.Ready,
                     },
@@ -94,6 +93,7 @@ describe(createIframeMessenger.name, () => {
                 // ExampleMessageType.SendSize requires a data verifier
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.SendSize,
                     },
@@ -103,6 +103,7 @@ describe(createIframeMessenger.name, () => {
                 });
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
+                    childOrigin: '*',
                     // ExampleMessageType.SendScalingMethod requires input data
                     // @ts-expect-error
                     message: {
@@ -117,6 +118,7 @@ describe(createIframeMessenger.name, () => {
                 // ExampleMessageType.SendScalingMethod requires data
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.SendScalingMethod,
                         data: 'default',
@@ -150,15 +152,18 @@ describe(createIframeMessenger.name, () => {
          * @deprecated
          */
         function methodCallTypeTests() {
-            const messenger = createIframeMessenger<ExampleMessageData>({allowedOrigins: ['']});
+            const messenger = createIframeMessenger<ExampleMessageData>();
             try {
                 // narrows message types by their type property
-                messenger.listenForParentMessages((message): any => {
-                    if (message.type === ExampleMessageType.ForceSize) {
-                        assertTypeOf(message.data).toEqualTypeOf<Dimensions | undefined>();
-                    } else if (message.type === ExampleMessageType.Ready) {
-                        assertTypeOf(message.data).toEqualTypeOf<undefined>();
-                    }
+                messenger.listenForParentMessages({
+                    parentOrigin: '*',
+                    listener: (message): any => {
+                        if (message.type === ExampleMessageType.ForceSize) {
+                            assertTypeOf(message.data).toEqualTypeOf<Dimensions | undefined>();
+                        } else if (message.type === ExampleMessageType.Ready) {
+                            assertTypeOf(message.data).toEqualTypeOf<undefined>();
+                        }
+                    },
                 });
 
                 /**
@@ -178,6 +183,7 @@ describe(createIframeMessenger.name, () => {
             () =>
                 messenger.sendMessageToChild({
                     iframeElement: iframe,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.SendScale,
                         data: {
@@ -193,13 +199,14 @@ describe(createIframeMessenger.name, () => {
         );
     });
 
-    it('fails on invalid origin)', async () => {
-        const {iframe, messenger} = await setupTest(['something.com']);
+    it('fails on invalid origin', async () => {
+        const {iframe, messenger} = await setupTest();
 
         await assertThrows(
             () =>
                 messenger.sendMessageToChild({
                     iframeElement: iframe,
+                    childOrigin: 'something.com',
                     message: {
                         type: ExampleMessageType.SendScale,
                         data: {
@@ -244,6 +251,7 @@ describe(createIframeMessenger.name, () => {
         const result: undefined = (
             await messenger.sendMessageToChild({
                 iframeElement: iframe,
+                childOrigin: '*',
                 message: {
                     type: ExampleMessageType.SendScale,
                     data: {
@@ -288,6 +296,7 @@ describe(createIframeMessenger.name, () => {
 
         const result = await messenger.sendMessageToChild({
             iframeElement: iframe,
+            childOrigin: '*',
             message: {
                 type: ExampleMessageType.SendSize,
             },
@@ -330,6 +339,7 @@ describe(createIframeMessenger.name, () => {
             () =>
                 messenger.sendMessageToChild({
                     iframeElement: iframe,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.SendSize,
                     },
@@ -361,6 +371,7 @@ describe(createIframeMessenger.name, () => {
             () =>
                 messenger.sendMessageToChild({
                     iframeElement: iframe,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.SendScale,
                         data: {
@@ -383,6 +394,7 @@ describe(createIframeMessenger.name, () => {
             () =>
                 messenger.sendMessageToChild({
                     iframeElement: undefined as any,
+                    childOrigin: '*',
                     message: {
                         type: ExampleMessageType.SendScale,
                         data: {
@@ -426,6 +438,7 @@ describe(createIframeMessenger.name, () => {
 
         const output = await messenger.sendMessageToChild({
             iframeElement: iframe,
+            childOrigin: window.location.origin,
             message: {
                 type: ExampleMessageType.SendScale,
                 data: {

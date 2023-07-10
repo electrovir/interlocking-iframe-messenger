@@ -11,6 +11,4 @@ export type IframeMessageData = {
     };
 };
 
-export const demoIframeMessenger = createIframeMessenger<IframeMessageData>({
-    allowedOrigins: [window.location.origin],
-});
+export const demoIframeMessenger = createIframeMessenger<IframeMessageData>({});

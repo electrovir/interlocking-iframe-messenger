@@ -50,9 +50,7 @@ export type MessageData = {
     };
 };
 
-export const myIframeMessenger = createIframeMessenger<MessageData>({
-    allowedOrigins: ['https://example.com'],
-});
+export const myIframeMessenger = createIframeMessenger<MessageData>();
 ```
 
 ### send a message to the child iframe
@@ -70,6 +68,7 @@ async function sendMyMessage(iframeElement: HTMLIFrameElement) {
     const childValue: string = (
         await myIframeMessenger.sendMessageToChild({
             iframeElement,
+            childOrigin: 'https://example.com',
             message: {
                 type: MessageTypeEnum.RequestDataFromChild,
             },
@@ -99,16 +98,19 @@ Use `.listenForParentMessages()` in the child iframe source code to properly han
 ```TypeScript
 import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example';
 
-myIframeMessenger.listenForParentMessages((message) => {
-    if (message.type === MessageTypeEnum.RequestDataFromChild) {
-        // send the data that the parent is expecting
-        return 'some string from the child';
-    } else if (message.type === MessageTypeEnum.SendDataToChild) {
-        const parentData = message.data;
+myIframeMessenger.listenForParentMessages({
+    parentOrigin: 'https://example.com',
+    listener: (message) => {
+        if (message.type === MessageTypeEnum.RequestDataFromChild) {
+            // send the data that the parent is expecting
+            return 'some string from the child';
+        } else if (message.type === MessageTypeEnum.SendDataToChild) {
+            const parentData = message.data;
 
-        // process parentData here
-    }
+            // process parentData here
+        }
 
-    return undefined;
+        return undefined;
+    },
 });
 ```

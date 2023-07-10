@@ -16,14 +16,17 @@ export const VirDemoChild = defineElementNoInputs({
         childNumber: createRandomChildNumber(),
     },
     initCallback({state, updateState}) {
-        demoIframeMessenger.listenForParentMessages((message) => {
-            if (message.type === 'requestNumberFromChild') {
-                return state.childNumber;
-            } else if (message.type == 'sendStringToChild') {
-                updateState({fromParentString: message.data});
-            }
+        demoIframeMessenger.listenForParentMessages({
+            parentOrigin: '',
+            listener(message) {
+                if (message.type === 'requestNumberFromChild') {
+                    return state.childNumber;
+                } else if (message.type == 'sendStringToChild') {
+                    updateState({fromParentString: message.data});
+                }
 
-            return undefined;
+                return undefined;
+            },
         });
     },
     renderCallback({updateState, state}) {

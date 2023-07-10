@@ -62,6 +62,7 @@ export const VirDemoParent = defineElementNoInputs({
 
                             await demoIframeMessenger.sendMessageToChild({
                                 iframeElement: state.iframeElement,
+                                childOrigin: window.location.origin,
                                 message: {
                                     type: 'sendStringToChild',
                                     data: state.parentString,
@@ -83,6 +84,7 @@ export const VirDemoParent = defineElementNoInputs({
                                 fromChildNumber: (
                                     await demoIframeMessenger.sendMessageToChild({
                                         iframeElement: state.iframeElement,
+                                        childOrigin: window.location.origin,
                                         message: {
                                             type: 'requestNumberFromChild',
                                         },
@@ -124,6 +126,7 @@ export const VirDemoParent = defineElementNoInputs({
                         updateState({iframeElement: iframeElement});
                         demoIframeMessenger.sendMessageToChild({
                             iframeElement,
+                            childOrigin: window.location.origin,
                             message: {
                                 type: 'sendStringToChild',
                                 data: state.parentString,
@@ -133,6 +136,7 @@ export const VirDemoParent = defineElementNoInputs({
                             fromChildNumber: (
                                 await demoIframeMessenger.sendMessageToChild({
                                     iframeElement,
+                                    childOrigin: window.location.origin,
                                     message: {
                                         type: 'requestNumberFromChild',
                                     },

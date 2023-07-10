@@ -2,15 +2,10 @@ import {randomString} from '@augment-vir/browser';
 import {ensureError, wait} from '@augment-vir/common';
 import {isDebugMode} from '../debug-mode';
 import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
-import {isAllowedOrigin} from './assert-allowed-origin';
+import {assertAllowedOrigin, isAllowedOrigin} from './allowed-origin';
 import {Message} from './create-messenger';
 import {MessageDataBase} from './iframe-messenger';
-import {
-    AllowedOrigins,
-    AnyOrigin,
-    GenericSendMessageInputs,
-    MessageDirectionEnum,
-} from './messenger-inputs';
+import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
 
 function isMessageKind<
     SpecificMessageType extends keyof MessageDataOptions,
@@ -38,7 +33,7 @@ function calculateAttemptWaitDuration(attemptCount: number) {
 
 export async function sendPingPongMessageToChild(
     {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
-    allowedOrigins: AllowedOrigins,
+    requiredOrigin: string,
     timeoutMs: number,
     intervalMs: number | undefined,
 ): Promise<{data: any; event: MessageEvent}> {
@@ -67,11 +62,10 @@ export async function sendPingPongMessageToChild(
     };
 
     const expectedMessageType = messageToSend.type;
-    const allowedOriginsArray = allowedOrigins === AnyOrigin ? ['*'] : allowedOrigins;
 
     function responseListener(messageEvent: MessageEvent<any>) {
         try {
-            if (!isAllowedOrigin(allowedOrigins, messageEvent)) {
+            if (!isAllowedOrigin(requiredOrigin, messageEvent)) {
                 return;
             }
 
@@ -149,16 +143,19 @@ export async function sendPingPongMessageToChild(
             }
             /* c8 ignore stop */
             messagePosted = true;
-            allowedOriginsArray.forEach((targetOrigin) => {
-                try {
-                    iframeWindow.postMessage(fullMessageToSend, {targetOrigin});
-                } catch (error) {}
-            });
+            assertAllowedOrigin(requiredOrigin, iframeWindow);
+            iframeWindow.postMessage(fullMessageToSend, {targetOrigin: requiredOrigin});
         }
         await wait(intervalMs || calculateAttemptWaitDuration(tryCount));
         tryCount++;
     }
     const attemptDuration = Date.now() - startTime;
+    // ignore debug logging
+    /* c8 ignore start */
+    if (isDebugMode()) {
+        console.info('attempt duration', attemptDuration, 'messageId', fullMessageToSend.messageId);
+    }
+    /* c8 ignore stop */
     globalThis.removeEventListener('message', responseListener);
 
     if (listenerError) {

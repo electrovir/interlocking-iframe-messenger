@@ -4,6 +4,7 @@ async function sendMyMessage(iframeElement: HTMLIFrameElement) {
     const childValue: string = (
         await myIframeMessenger.sendMessageToChild({
             iframeElement,
+            childOrigin: 'https://example.com',
             message: {
                 type: MessageTypeEnum.RequestDataFromChild,
             },
