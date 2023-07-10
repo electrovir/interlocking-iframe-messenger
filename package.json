@@ -1,6 +1,6 @@
 {
     "name": "interlocking-iframe-messenger",
-    "version": "4.0.3",
+    "version": "4.0.4",
     "description": "Post messages to a child iframe while accounting for race conditions.",
     "keywords": [
         "condition",
@@ -29,9 +29,8 @@
         "name": "electrovir",
         "url": "https://github.com/electrovir"
     },
-    "main": "dist/cjs/index.js",
-    "module": "dist/esm/index.js",
-    "types": "dist/types/index.d.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "scripts": {
         "build": "virmator frontend build",
         "compile": "virmator compile",
