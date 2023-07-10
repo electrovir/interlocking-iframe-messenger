@@ -13,10 +13,7 @@ export function isAllowedOrigin(
     });
 }
 
-export function assertAllowedOrigin(
-    requiredOrigin: string,
-    messageEvent: Pick<MessageEvent, 'origin'>,
-) {
+function assertAllowedOrigin(requiredOrigin: string, messageEvent: Pick<MessageEvent, 'origin'>) {
     if (requiredOrigin === '*') {
         console.warn(
             "Security warning: iFrame messenger is allowing messages from any origin with '*'",

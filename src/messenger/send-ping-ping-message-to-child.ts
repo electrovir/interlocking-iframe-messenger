@@ -2,7 +2,7 @@ import {randomString} from '@augment-vir/browser';
 import {ensureError, wait} from '@augment-vir/common';
 import {isDebugMode} from '../debug-mode';
 import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
-import {assertAllowedOrigin, isAllowedOrigin} from './allowed-origin';
+import {isAllowedOrigin} from './allowed-origin';
 import {Message} from './create-messenger';
 import {MessageDataBase} from './iframe-messenger';
 import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
@@ -143,7 +143,6 @@ export async function sendPingPongMessageToChild(
             }
             /* c8 ignore stop */
             messagePosted = true;
-            assertAllowedOrigin(requiredOrigin, iframeWindow);
             iframeWindow.postMessage(fullMessageToSend, {targetOrigin: requiredOrigin});
         }
         await wait(intervalMs || calculateAttemptWaitDuration(tryCount));
