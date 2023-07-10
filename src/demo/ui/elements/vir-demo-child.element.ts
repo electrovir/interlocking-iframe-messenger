@@ -17,7 +17,7 @@ export const VirDemoChild = defineElementNoInputs({
     },
     initCallback({state, updateState}) {
         demoIframeMessenger.listenForParentMessages({
-            parentOrigin: '',
+            parentOrigin: window.location.origin,
             listener(message) {
                 if (message.type === 'requestNumberFromChild') {
                     return state.childNumber;
