@@ -180,8 +180,8 @@ describe(createIframeMessenger.name, () => {
         const {iframe, messenger} = await setupTest();
 
         await assertThrows(
-            () =>
-                messenger.sendMessageToChild({
+            async () =>
+                await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: '*',
                     message: {
@@ -202,11 +202,34 @@ describe(createIframeMessenger.name, () => {
     it('fails on invalid origin', async () => {
         const {iframe, messenger} = await setupTest();
 
+        const iframeSrcDoc = html`
+            <html>
+                <head>
+                    <script>
+                        globalThis.addEventListener('message', (event) => {
+                            const message = event.data;
+                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                                globalThis.parent.postMessage({
+                                    messageId: message.messageId,
+                                    type: message.type,
+                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    data: undefined,
+                                });
+                            }
+                        });
+                    </script>
+                </head>
+                <body></body>
+            </html>
+        `;
+
+        iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
+
         await assertThrows(
-            () =>
-                messenger.sendMessageToChild({
+            async () =>
+                await messenger.sendMessageToChild({
                     iframeElement: iframe,
-                    childOrigin: 'something.com',
+                    childOrigin: 'http://example.com',
                     message: {
                         type: ExampleMessageType.SendScale,
                         data: {
@@ -217,7 +240,7 @@ describe(createIframeMessenger.name, () => {
                     timeoutMs: 100,
                 }),
             {
-                matchConstructor: Error,
+                matchMessage: 'Failed to receive response from the iframe for message',
             },
         );
     });
@@ -336,8 +359,8 @@ describe(createIframeMessenger.name, () => {
         iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
 
         await assertThrows(
-            () =>
-                messenger.sendMessageToChild({
+            async () =>
+                await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: '*',
                     message: {
@@ -368,8 +391,8 @@ describe(createIframeMessenger.name, () => {
         iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
 
         await assertThrows(
-            () =>
-                messenger.sendMessageToChild({
+            async () =>
+                await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: '*',
                     message: {
@@ -391,8 +414,8 @@ describe(createIframeMessenger.name, () => {
         const {messenger} = await setupTest();
 
         await assertThrows(
-            () =>
-                messenger.sendMessageToChild({
+            async () =>
+                await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
                     childOrigin: '*',
                     message: {
