@@ -4,6 +4,7 @@ import {isDebugMode} from '../debug-mode';
 import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
 import {isAllowedOrigin} from './allowed-origin';
 import {Message} from './create-messenger';
+import {GlobalMessenger} from './global-object-for-messaging';
 import {MessageDataBase} from './iframe-messenger';
 import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
 
@@ -36,6 +37,7 @@ export async function sendPingPongMessageToChild(
     requiredOrigin: string,
     timeoutMs: number,
     intervalMs: number | undefined,
+    globalObject: GlobalMessenger,
 ): Promise<{data: any; event: MessageEvent}> {
     if (!iframeElement) {
         throw new Error(`No iframe element was provided.`);
@@ -117,7 +119,7 @@ export async function sendPingPongMessageToChild(
     }
 
     // listen on the current window for responses from the child
-    globalThis.addEventListener('message', responseListener);
+    globalObject.addEventListener('message', responseListener);
 
     const startTime = Date.now();
 
@@ -155,7 +157,7 @@ export async function sendPingPongMessageToChild(
         console.info('attempt duration', attemptDuration, 'messageId', fullMessageToSend.messageId);
     }
     /* c8 ignore stop */
-    globalThis.removeEventListener('message', responseListener);
+    globalObject.removeEventListener('message', responseListener);
 
     if (listenerError) {
         throw listenerError;

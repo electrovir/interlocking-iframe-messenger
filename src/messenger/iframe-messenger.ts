@@ -1,5 +1,6 @@
 import {MaybePromise} from '@augment-vir/common';
 import {Message} from './create-messenger';
+import {GlobalMessenger} from './global-object-for-messaging';
 import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
 
 export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
@@ -29,6 +30,7 @@ export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
         ) => MaybePromise<
             MessageDataOptions[keyof MessageDataOptions][MessageDirectionEnum.FromChild]
         >;
+        globalObject?: GlobalMessenger;
     }) => void;
 };
 

@@ -34,10 +34,12 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 inputs.childOrigin,
                 inputs.timeoutMs || timeoutMs,
                 inputs.intervalMs,
+                inputs.globalObject ?? globalThis,
             );
         },
         listenForParentMessages(inputs) {
-            globalThis.addEventListener('message', async (messageEvent) => {
+            const globalObject = inputs.globalObject ?? globalThis;
+            globalObject.addEventListener('message', async (messageEvent) => {
                 if (!isAllowedOrigin(inputs.parentOrigin, messageEvent)) {
                     return;
                 }
@@ -80,7 +82,7 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 }
                 /* c8 ignore stop */
 
-                globalThis.parent.postMessage(messageForParent, {
+                globalObject.parent.postMessage(messageForParent, {
                     targetOrigin: inputs.parentOrigin,
                 });
             });

@@ -1,4 +1,5 @@
 import {Message} from './create-messenger';
+import {GlobalMessenger} from './global-object-for-messaging';
 import {MessageDataBase} from './iframe-messenger';
 
 export type GenericSendMessageInputs<
@@ -26,6 +27,7 @@ export type GenericSendMessageInputs<
         >,
         'direction' | 'messageId'
     >;
+    globalObject?: GlobalMessenger | undefined;
 } & (Message<
     MessageType,
     MessageDataOptions,
