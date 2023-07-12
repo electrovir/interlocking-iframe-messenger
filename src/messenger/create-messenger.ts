@@ -39,8 +39,14 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
         },
         listenForParentMessages(inputs) {
             const globalObject = inputs.globalObject ?? globalThis;
-            globalObject.addEventListener('message', async (messageEvent) => {
-                if (!isAllowedOrigin(inputs.parentOrigin, messageEvent)) {
+            async function listenCallback(messageEvent: MessageEvent) {
+                if (
+                    !isAllowedOrigin(
+                        inputs.parentOrigin,
+                        messageEvent,
+                        !!inputs._options?._DANGER_ignoreAnyOriginWarning,
+                    )
+                ) {
                     return;
                 }
                 const messageFromParent: Message<
@@ -60,10 +66,15 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 }
                 /* c8 ignore stop */
 
-                const responseData = await inputs.listener({
-                    ...messageFromParent,
-                    originalEvent: messageEvent,
-                });
+                const responseData = await inputs.listener(
+                    {
+                        ...messageFromParent,
+                        originalEvent: messageEvent,
+                    },
+                    () => {
+                        globalObject.removeEventListener('message', listenCallback);
+                    },
+                );
                 const messageForParent: Message<any, any, MessageDirectionEnum.FromChild> = {
                     type: messageFromParent.type,
                     direction: MessageDirectionEnum.FromChild,
@@ -85,7 +96,8 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
                 globalObject.parent.postMessage(messageForParent, {
                     targetOrigin: inputs.parentOrigin,
                 });
-            });
+            }
+            globalObject.addEventListener('message', listenCallback);
         },
     };
 }

@@ -67,7 +67,7 @@ export async function sendPingPongMessageToChild(
 
     function responseListener(messageEvent: MessageEvent<any>) {
         try {
-            if (!isAllowedOrigin(requiredOrigin, messageEvent)) {
+            if (!isAllowedOrigin(requiredOrigin, messageEvent, false)) {
                 return;
             }
 

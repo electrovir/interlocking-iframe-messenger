@@ -1,7 +1,15 @@
-import {MaybePromise} from '@augment-vir/common';
+import {MaybePromise, PartialAndUndefined} from '@augment-vir/common';
 import {Message} from './create-messenger';
 import {GlobalMessenger} from './global-object-for-messaging';
 import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
+
+export type _Options = PartialAndUndefined<{
+    /**
+     * Ignores the any origin warnings. This is dangerous! Allowing any origin will expose your
+     * iframe to any parent domain which can then steal your data.
+     */
+    _DANGER_ignoreAnyOriginWarning: boolean;
+}>;
 
 export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
     sendMessageToChild: <SpecificMessageType extends keyof MessageDataOptions>(
@@ -27,10 +35,12 @@ export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
                 MessageDataOptions,
                 MessageDirectionEnum.FromParent
             > & {originalEvent: MessageEvent},
+            removeListener: () => void,
         ) => MaybePromise<
             MessageDataOptions[keyof MessageDataOptions][MessageDirectionEnum.FromChild]
         >;
         globalObject?: GlobalMessenger;
+        _options?: _Options;
     }) => void;
 };
 
