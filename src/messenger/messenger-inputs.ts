@@ -36,9 +36,15 @@ export type GenericSendMessageInputs<
     ? {verifyChildData?: undefined}
     : {
           verifyChildData: (
-              data: Readonly<
-                  Message<MessageType, MessageDataOptions, MessageDirectionEnum.FromChild>['data']
-              >,
+              data:
+                  | Readonly<
+                        Message<
+                            MessageType,
+                            MessageDataOptions,
+                            MessageDirectionEnum.FromChild
+                        >['data']
+                    >
+                  | undefined,
           ) => boolean;
       });
 
