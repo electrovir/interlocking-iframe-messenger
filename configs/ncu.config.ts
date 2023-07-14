@@ -5,7 +5,10 @@ export const ncuConfig: RunOptions = {
     upgrade: true,
     root: true,
     // exclude these
-    reject: ['prettier'],
+    reject: [
+        'prettier',
+        '@web/test-runner',
+    ],
     // include only these
     filter: [],
 };
