@@ -37,7 +37,7 @@ export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
             > & {originalEvent: MessageEvent},
             removeListener: () => void,
         ) => MaybePromise<
-            MessageDataOptions[keyof MessageDataOptions][MessageDirectionEnum.FromChild]
+            MessageDataOptions[keyof MessageDataOptions][MessageDirectionEnum.FromChild] | undefined
         >;
         globalObject?: GlobalMessenger;
         _options?: _Options;
