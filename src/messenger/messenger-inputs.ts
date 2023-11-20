@@ -1,6 +1,5 @@
-import {Message} from './create-messenger';
 import {GlobalMessenger} from './global-object-for-messaging';
-import {MessageDataBase} from './iframe-messenger';
+import {Message, MessageDataBase, MessageDirectionEnum} from './message';
 
 export type GenericSendMessageInputs<
     MessageType extends keyof MessageDataOptions,
@@ -47,11 +46,6 @@ export type GenericSendMessageInputs<
                   | undefined,
           ) => boolean;
       });
-
-export enum MessageDirectionEnum {
-    FromParent = 'from-parent',
-    FromChild = 'from-child',
-}
 
 export type IframeMessengerOptions = {
     /**

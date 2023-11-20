@@ -1,4 +1,4 @@
-import {randomInteger} from '@augment-vir/browser';
+import {randomInteger} from '@augment-vir/common';
 import {defineElementNoInputs, html, listen} from 'element-vir';
 import {demoIframeMessenger} from '../../services/demo-iframe-messenger';
 

@@ -1,6 +1,5 @@
-import {randomString} from '@augment-vir/browser';
-import {css, defineElementNoInputs, html, listen, onDomCreated} from 'element-vir';
-import {classMap} from 'lit/directives/class-map.js';
+import {randomString} from '@augment-vir/common';
+import {classMap, css, defineElementNoInputs, html, listen, onDomCreated} from 'element-vir';
 import {demoIframeMessenger} from '../../services/demo-iframe-messenger';
 import {childMarker} from '../../services/env/is-child';
 

@@ -1,15 +1,13 @@
-import {assertThrows, assertTypeOf, typedAssertInstanceOf} from '@augment-vir/browser-testing';
 import {convertTemplateToString} from '@augment-vir/element-vir';
 import {assert, html, fixture as renderFixture} from '@open-wc/testing';
+import {assertInstanceOf, assertThrows, assertTypeOf} from 'run-time-assertions';
 import {MessageDirectionEnum, createIframeMessenger} from '..';
 
 async function setupTest() {
-    const iframeElement = await renderFixture(
-        html`
-            <iframe></iframe>
-        `,
-    );
-    typedAssertInstanceOf(iframeElement, HTMLIFrameElement);
+    const iframeElement = await renderFixture(html`
+        <iframe></iframe>
+    `);
+    assertInstanceOf(iframeElement, HTMLIFrameElement);
 
     const messenger = createIframeMessenger<ExampleMessageData>();
 

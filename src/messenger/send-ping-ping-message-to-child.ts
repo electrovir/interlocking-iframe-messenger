@@ -1,12 +1,10 @@
-import {randomString} from '@augment-vir/browser';
-import {ensureError, wait} from '@augment-vir/common';
+import {ensureError, randomString, wait} from '@augment-vir/common';
 import {isDebugMode} from '../debug-mode';
 import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
 import {isAllowedOrigin} from './allowed-origin';
-import {Message} from './create-messenger';
 import {GlobalMessenger} from './global-object-for-messaging';
-import {MessageDataBase} from './iframe-messenger';
-import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
+import {Message, MessageDataBase, MessageDirectionEnum} from './message';
+import {GenericSendMessageInputs} from './messenger-inputs';
 
 function isMessageKind<
     SpecificMessageType extends keyof MessageDataOptions,

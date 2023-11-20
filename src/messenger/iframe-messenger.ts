@@ -1,7 +1,7 @@
 import {MaybePromise, PartialAndUndefined} from '@augment-vir/common';
-import {Message} from './create-messenger';
 import {GlobalMessenger} from './global-object-for-messaging';
-import {GenericSendMessageInputs, MessageDirectionEnum} from './messenger-inputs';
+import {Message, MessageDataBase, MessageDirectionEnum} from './message';
+import {GenericSendMessageInputs} from './messenger-inputs';
 
 export type _Options = PartialAndUndefined<{
     /**
@@ -43,11 +43,3 @@ export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
         _options?: _Options;
     }) => void;
 };
-
-export type MessageDataBase = Record<
-    string,
-    {
-        [MessageDirectionEnum.FromChild]: unknown;
-        [MessageDirectionEnum.FromParent]: unknown;
-    }
->;

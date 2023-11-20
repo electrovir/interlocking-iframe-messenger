@@ -1,22 +1,9 @@
 import {isDebugMode} from '../debug-mode';
 import {isAllowedOrigin} from './allowed-origin';
-import {IframeMessenger, MessageDataBase} from './iframe-messenger';
-import {IframeMessengerOptions, MessageDirectionEnum} from './messenger-inputs';
+import {IframeMessenger} from './iframe-messenger';
+import {Message, MessageDataBase, MessageDirectionEnum} from './message';
+import {IframeMessengerOptions} from './messenger-inputs';
 import {sendPingPongMessageToChild} from './send-ping-ping-message-to-child';
-
-export type Message<
-    MessageType extends keyof MessageDataOptions,
-    MessageDataOptions extends MessageDataBase,
-    MessageDirectionGeneric extends MessageDirectionEnum,
-> = {
-    [SpecificMessageType in MessageType]: {
-        type: SpecificMessageType;
-        direction: MessageDirectionGeneric;
-        messageId: string;
-    } & (undefined extends MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]
-        ? {data?: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]}
-        : {data: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]});
-}[MessageType];
 
 export function createIframeMessenger<MessageDataOptions extends MessageDataBase>(
     {timeoutMs = 10_000}: IframeMessengerOptions = {timeoutMs: 10_000},
