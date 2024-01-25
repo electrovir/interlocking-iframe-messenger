@@ -69,9 +69,8 @@ async function sendMyMessage(iframeElement: HTMLIFrameElement) {
         await myIframeMessenger.sendMessageToChild({
             iframeElement,
             childOrigin: 'https://example.com',
-            message: {
-                type: MessageTypeEnum.RequestDataFromChild,
-            },
+            type: MessageTypeEnum.RequestDataFromChild,
+            data: undefined,
             // if data is expected from the child, a verifyChildData function must be provided
             verifyChildData(childData) {
                 return typeof childData === 'string';
