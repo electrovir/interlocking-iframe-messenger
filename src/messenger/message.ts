@@ -1,18 +1,17 @@
 export type Message<
     MessageType extends keyof MessageDataOptions,
-    MessageDataOptions extends MessageDataBase,
+    MessageDataOptions extends BaseMessageData,
     MessageDirectionGeneric extends MessageDirectionEnum,
 > = {
     [SpecificMessageType in MessageType]: {
         type: SpecificMessageType;
         direction: MessageDirectionGeneric;
         messageId: string;
-    } & (undefined extends MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]
-        ? {data?: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]}
-        : {data: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric]});
+        data: MessageDataOptions[SpecificMessageType][MessageDirectionGeneric];
+    };
 }[MessageType];
 
-export type MessageDataBase = Record<
+export type BaseMessageData = Record<
     string,
     {
         [MessageDirectionEnum.FromChild]: unknown;

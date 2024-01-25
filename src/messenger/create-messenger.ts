@@ -1,16 +1,16 @@
 import {isDebugMode} from '../debug-mode';
 import {isAllowedOrigin} from './allowed-origin';
 import {IframeMessenger} from './iframe-messenger';
-import {Message, MessageDataBase, MessageDirectionEnum} from './message';
-import {IframeMessengerOptions} from './messenger-inputs';
+import {BaseMessageData, Message, MessageDirectionEnum} from './message';
+import {IframeMessengerOptions, defaultIframeMessengerOptions} from './send-message-inputs';
 import {sendPingPongMessageToChild} from './send-ping-ping-message-to-child';
 
-export function createIframeMessenger<MessageDataOptions extends MessageDataBase>(
-    {timeoutMs = 10_000}: IframeMessengerOptions = {timeoutMs: 10_000},
-): IframeMessenger<MessageDataOptions> {
+export function createIframeMessenger<MessageDataOptions extends BaseMessageData>({
+    timeout = defaultIframeMessengerOptions.timeout,
+}: IframeMessengerOptions = defaultIframeMessengerOptions): IframeMessenger<MessageDataOptions> {
     return {
         async sendMessageToChild(inputs) {
-            if (inputs.message.type === 'error') {
+            if (inputs.type === 'error') {
                 throw new Error(
                     `Cannot send message to child with type 'error'. 'error' is reserved for internal error messaging.`,
                 );
@@ -19,8 +19,8 @@ export function createIframeMessenger<MessageDataOptions extends MessageDataBase
             return await sendPingPongMessageToChild(
                 inputs,
                 inputs.childOrigin,
-                inputs.timeoutMs || timeoutMs,
-                inputs.intervalMs,
+                inputs.timeout || timeout,
+                inputs.interval,
                 inputs.globalObject ?? globalThis,
             );
         },

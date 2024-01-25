@@ -1,7 +1,7 @@
 import {MaybePromise, PartialAndUndefined} from '@augment-vir/common';
 import {GlobalMessenger} from './global-object-for-messaging';
-import {Message, MessageDataBase, MessageDirectionEnum} from './message';
-import {GenericSendMessageInputs} from './messenger-inputs';
+import {BaseMessageData, Message, MessageDirectionEnum} from './message';
+import {MessageForChildParams} from './send-message-inputs';
 
 export type _Options = PartialAndUndefined<{
     /**
@@ -11,12 +11,12 @@ export type _Options = PartialAndUndefined<{
     _DANGER_ignoreAnyOriginWarning: boolean;
 }>;
 
-export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
-    sendMessageToChild: <SpecificMessageType extends keyof MessageDataOptions>(
-        inputs: GenericSendMessageInputs<SpecificMessageType, MessageDataOptions>,
+export type IframeMessenger<MessageData extends BaseMessageData> = {
+    sendMessageToChild: <const SpecificMessageType extends keyof MessageData>(
+        inputs: Readonly<MessageForChildParams<SpecificMessageType, MessageData>>,
     ) => Promise<{
-        data: MessageDataOptions[SpecificMessageType][MessageDirectionEnum.FromChild];
-        event: MessageEvent;
+        data: MessageData[SpecificMessageType][MessageDirectionEnum.FromChild];
+        event: MessageEvent<MessageData[SpecificMessageType][MessageDirectionEnum.FromChild]>;
     }>;
     listenForParentMessages: (inputs: {
         /**
@@ -30,14 +30,12 @@ export type IframeMessenger<MessageDataOptions extends MessageDataBase> = {
         parentOrigin: string;
         /** This is called when a message is received. */
         listener: (
-            message: Message<
-                keyof MessageDataOptions,
-                MessageDataOptions,
-                MessageDirectionEnum.FromParent
-            > & {originalEvent: MessageEvent},
+            message: Message<keyof MessageData, MessageData, MessageDirectionEnum.FromParent> & {
+                originalEvent: MessageEvent;
+            },
             removeListener: () => void,
         ) => MaybePromise<
-            MessageDataOptions[keyof MessageDataOptions][MessageDirectionEnum.FromChild] | undefined
+            MessageData[keyof MessageData][MessageDirectionEnum.FromChild] | undefined
         >;
         globalObject?: GlobalMessenger;
         _options?: _Options;

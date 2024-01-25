@@ -3,12 +3,12 @@ import {isDebugMode} from '../debug-mode';
 import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
 import {isAllowedOrigin} from './allowed-origin';
 import {GlobalMessenger} from './global-object-for-messaging';
-import {Message, MessageDataBase, MessageDirectionEnum} from './message';
-import {GenericSendMessageInputs} from './messenger-inputs';
+import {BaseMessageData, Message, MessageDirectionEnum} from './message';
+import {MessageForChildParams} from './send-message-inputs';
 
 function isMessageKind<
     SpecificMessageType extends keyof MessageDataOptions,
-    MessageDataOptions extends MessageDataBase,
+    MessageDataOptions extends BaseMessageData,
     MessageDirectionGeneric extends MessageDirectionEnum,
 >(
     type: SpecificMessageType,
@@ -31,10 +31,10 @@ function calculateAttemptWaitDuration(attemptCount: number) {
 }
 
 export async function sendPingPongMessageToChild(
-    {message: messageToSend, verifyChildData, iframeElement}: GenericSendMessageInputs<any, any>,
+    {data, type, verifyChildData, iframeElement}: MessageForChildParams<any, any>,
     requiredOrigin: string,
-    timeoutMs: number,
-    intervalMs: number | undefined,
+    timeout: {milliseconds: number},
+    interval: {milliseconds: number} | undefined,
     globalObject: GlobalMessenger,
 ): Promise<{data: any; event: MessageEvent}> {
     if (!iframeElement) {
@@ -50,6 +50,7 @@ export async function sendPingPongMessageToChild(
     let responseEvent: MessageEvent | undefined;
     let listenerError: Error | undefined;
     let messagePosted = false;
+    const messageToSend = {data, type};
     const fullMessageToSend: Omit<
         Message<any, any, MessageDirectionEnum.FromParent>,
         'direction'
@@ -121,7 +122,11 @@ export async function sendPingPongMessageToChild(
 
     const startTime = Date.now();
 
-    while (!validResponseReceived && Date.now() - startTime < timeoutMs && !listenerError) {
+    while (
+        !validResponseReceived &&
+        Date.now() - startTime < timeout.milliseconds &&
+        !listenerError
+    ) {
         if (!iframeElement.isConnected) {
             throw new IframeDisconnectedError();
         }
@@ -145,7 +150,7 @@ export async function sendPingPongMessageToChild(
             messagePosted = true;
             iframeWindow.postMessage(fullMessageToSend, {targetOrigin: requiredOrigin});
         }
-        await wait(intervalMs || calculateAttemptWaitDuration(tryCount));
+        await wait(interval?.milliseconds || calculateAttemptWaitDuration(tryCount));
         tryCount++;
     }
     const attemptDuration = Date.now() - startTime;
@@ -165,7 +170,7 @@ export async function sendPingPongMessageToChild(
         throw new Error(
             `Failed to receive response from the iframe for message '${
                 messageToSend.type
-            }' after '${Math.ceil(timeoutMs / 1000)}' seconds).`,
+            }' after '${Math.ceil(timeout.milliseconds / 1000)}' seconds).`,
         );
     }
 

@@ -1,6 +1,6 @@
 import {createIframeMessenger, MessageDirectionEnum} from '../..';
 
-export type IframeMessageData = {
+export type DemoMessageData = {
     sendStringToChild: {
         [MessageDirectionEnum.FromParent]: string;
         [MessageDirectionEnum.FromChild]: undefined;
@@ -11,4 +11,4 @@ export type IframeMessageData = {
     };
 };
 
-export const demoIframeMessenger = createIframeMessenger<IframeMessageData>({});
+export const demoIframeMessenger = createIframeMessenger<DemoMessageData>({});

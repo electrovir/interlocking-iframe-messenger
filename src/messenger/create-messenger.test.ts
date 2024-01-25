@@ -76,68 +76,58 @@ describe(createIframeMessenger.name, () => {
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
                     childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.Ready,
-                    },
+                    type: ExampleMessageType.Ready,
+                    data: undefined,
+                });
+                await messenger.sendMessageToChild({
+                    iframeElement: undefined as any,
+                    childOrigin: '',
+                    type: ExampleMessageType.SendSize,
+                    data: undefined,
                 });
                 // ExampleMessageType.SendSize requires a data verifier
-                // @ts-expect-error
-                await messenger.sendMessageToChild({
-                    iframeElement: undefined as any,
-                    message: {
+                await messenger.sendMessageToChild(
+                    // @ts-expect-error: data cannot be omitted
+                    {
+                        iframeElement: undefined as any,
+                        childOrigin: '*',
                         type: ExampleMessageType.SendSize,
+                        verifyChildData: () => {
+                            return true;
+                        },
                     },
-                });
-                // ExampleMessageType.SendSize requires a data verifier
-                await messenger.sendMessageToChild({
-                    iframeElement: undefined as any,
-                    childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.SendSize,
-                    },
-                    verifyChildData: () => {
-                        return true;
-                    },
-                });
-                await messenger.sendMessageToChild({
-                    iframeElement: undefined as any,
-                    childOrigin: '*',
-                    // ExampleMessageType.SendScalingMethod requires input data
-                    // @ts-expect-error
-                    message: {
+                );
+                await messenger.sendMessageToChild(
+                    // @ts-ignore-error: data cannot be omitted.
+                    {
+                        iframeElement: undefined as any,
+                        childOrigin: '*',
                         type: ExampleMessageType.SendScalingMethod,
+                        /** Verify is allowed but won't be useful. */
+                        verifyChildData: () => {
+                            return true;
+                        },
                     },
-                    // ExampleMessageType.SendScalingMethod has no child data, a data verifier is not allowed
-                    // @ts-expect-error
-                    verifyChildData: () => {
-                        return true;
-                    },
-                });
+                );
                 // ExampleMessageType.SendScalingMethod requires data
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
                     childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.SendScalingMethod,
-                        data: 'default',
-                    },
+                    type: ExampleMessageType.SendScalingMethod,
+                    data: 'default',
                 });
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
-                    message: {
-                        // cannot send error type
-                        // @ts-expect-error
-                        type: 'error',
-                    },
+                    // cannot send error type
+                    // @ts-expect-error
+                    type: 'error',
                 });
                 // ExampleMessageType.SendScalingMethod requires a specific kind of data
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
-                    message: {
-                        type: ExampleMessageType.SendScalingMethod,
-                        // @ts-expect-error
-                        data: 'not acceptable',
-                    },
+                    type: ExampleMessageType.SendScalingMethod,
+                    // @ts-expect-error
+                    data: 'not acceptable',
                 });
             } catch (error) {}
         }
@@ -182,14 +172,12 @@ describe(createIframeMessenger.name, () => {
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.SendScale,
-                        data: {
-                            width: 11,
-                            height: 22,
-                        },
+                    type: ExampleMessageType.SendScale,
+                    data: {
+                        width: 11,
+                        height: 22,
                     },
-                    timeoutMs: 100,
+                    timeout: {milliseconds: 100},
                 }),
             {
                 matchConstructor: Error,
@@ -228,14 +216,12 @@ describe(createIframeMessenger.name, () => {
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: 'http://example.com',
-                    message: {
-                        type: ExampleMessageType.SendScale,
-                        data: {
-                            width: 11,
-                            height: 22,
-                        },
+                    type: ExampleMessageType.SendScale,
+                    data: {
+                        width: 11,
+                        height: 22,
                     },
-                    timeoutMs: 100,
+                    timeout: {milliseconds: 100},
                 }),
             {
                 matchMessage: 'Failed to receive response from the iframe for message',
@@ -273,12 +259,10 @@ describe(createIframeMessenger.name, () => {
             await messenger.sendMessageToChild({
                 iframeElement: iframe,
                 childOrigin: '*',
-                message: {
-                    type: ExampleMessageType.SendScale,
-                    data: {
-                        width: 11,
-                        height: 22,
-                    },
+                type: ExampleMessageType.SendScale,
+                data: {
+                    width: 11,
+                    height: 22,
                 },
             })
         ).data;
@@ -318,16 +302,14 @@ describe(createIframeMessenger.name, () => {
         const result = await messenger.sendMessageToChild({
             iframeElement: iframe,
             childOrigin: '*',
-            message: {
-                type: ExampleMessageType.SendSize,
-            },
+            type: ExampleMessageType.SendSize,
+            data: undefined,
             verifyChildData() {
                 verifyCount++;
                 return verifyCount > 2;
             },
         });
 
-        // undefined because the child responded with undefined as the message data
         assert.deepStrictEqual(result.data, {height: 1, width: 2});
     });
 
@@ -361,13 +343,14 @@ describe(createIframeMessenger.name, () => {
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.SendSize,
-                    },
+                    type: ExampleMessageType.SendSize,
+                    data: undefined,
                     verifyChildData() {
                         return true;
                     },
-                    timeoutMs: 100,
+                    timeout: {
+                        milliseconds: 100,
+                    },
                 }),
             {
                 matchMessage: 'Child threw an error',
@@ -393,14 +376,12 @@ describe(createIframeMessenger.name, () => {
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
                     childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.SendScale,
-                        data: {
-                            width: 11,
-                            height: 22,
-                        },
+                    type: ExampleMessageType.SendScale,
+                    data: {
+                        width: 11,
+                        height: 22,
                     },
-                    timeoutMs: 100,
+                    timeout: {milliseconds: 100},
                 }),
             {
                 matchConstructor: Error,
@@ -416,14 +397,12 @@ describe(createIframeMessenger.name, () => {
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
                     childOrigin: '*',
-                    message: {
-                        type: ExampleMessageType.SendScale,
-                        data: {
-                            width: 11,
-                            height: 22,
-                        },
+                    type: ExampleMessageType.SendScale,
+                    data: {
+                        width: 11,
+                        height: 22,
                     },
-                    timeoutMs: 100,
+                    timeout: {milliseconds: 100},
                 }),
             {
                 matchMessage: 'No iframe element was provided',
@@ -460,12 +439,10 @@ describe(createIframeMessenger.name, () => {
         const output = await messenger.sendMessageToChild({
             iframeElement: iframe,
             childOrigin: window.location.origin,
-            message: {
-                type: ExampleMessageType.SendScale,
-                data: {
-                    width: 11,
-                    height: 22,
-                },
+            type: ExampleMessageType.SendScale,
+            data: {
+                width: 11,
+                height: 22,
             },
         });
 
