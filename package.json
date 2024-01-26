@@ -40,7 +40,7 @@
         "publish": "virmator publish \"npm run compile && npm run test:all\"",
         "start": "npm install && virmator frontend",
         "test": "virmator test-web",
-        "test:all": "concurrently --kill-others-on-fail -c auto --names types,tests,spelling,format,deps,docs \"npm run test:types\" \"npm run test:coverage\" \"npm run test:spelling\" \"npm run test:format\" \"npm run test:deps\" \"npm run test:docs\"",
+        "test:all": "concurrently --kill-others-on-fail -c auto --names types,tests,spelling,format,deps,docs,build \"npm run test:types\" \"npm run test:coverage\" \"npm run test:spelling\" \"npm run test:format\" \"npm run test:deps\" \"npm run test:docs\" \"npm run build\"",
         "test:coverage": "npm run test coverage",
         "test:deps": "virmator deps check",
         "test:docs": "virmator docs check --index src/index.ts README.md",
@@ -82,7 +82,7 @@
         "typedoc": "^0.25.7",
         "typescript": "5.3.3",
         "virmator": "^11.3.1",
-        "vite": "^4.4.4",
+        "vite": "^4.5.2",
         "vite-tsconfig-paths": "^4.3.1"
     }
 }
