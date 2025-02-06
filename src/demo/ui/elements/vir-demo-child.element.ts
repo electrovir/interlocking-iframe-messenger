@@ -1,6 +1,6 @@
 import {randomInteger} from '@augment-vir/common';
 import {defineElementNoInputs, html, listen} from 'element-vir';
-import {demoIframeMessenger} from '../../services/demo-iframe-messenger';
+import {demoIframeMessenger} from '../../services/demo-iframe-messenger.js';
 
 function createRandomChildNumber() {
     return randomInteger({
@@ -15,7 +15,7 @@ export const VirDemoChild = defineElementNoInputs({
         fromParentString: '',
         childNumber: createRandomChildNumber(),
     },
-    initCallback({state, updateState}) {
+    init({state, updateState}) {
         demoIframeMessenger.listenForParentMessages({
             parentOrigin: window.location.origin,
             listener(message) {
@@ -29,7 +29,7 @@ export const VirDemoChild = defineElementNoInputs({
             },
         });
     },
-    renderCallback({updateState, state}) {
+    render({updateState, state}) {
         return html`
             <h1>child</h1>
 

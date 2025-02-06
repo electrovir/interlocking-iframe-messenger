@@ -1,7 +1,12 @@
-export type Message<
+/**
+ * Messages sent to and from iframes.
+ *
+ * @category Internal
+ */
+export type IframeMessage<
     MessageType extends keyof MessageDataOptions,
-    MessageDataOptions extends BaseMessageData,
-    MessageDirectionGeneric extends MessageDirectionEnum,
+    MessageDataOptions extends BaseIframeMessageData,
+    MessageDirectionGeneric extends IframeMessageDirectionEnum,
 > = {
     [SpecificMessageType in MessageType]: {
         type: SpecificMessageType;
@@ -11,15 +16,21 @@ export type Message<
     };
 }[MessageType];
 
-export type BaseMessageData = Record<
+/**
+ * Used for {@link IframeMessage}.
+ *
+ * @category Internal
+ */
+export type BaseIframeMessageData = Record<
     string,
     {
-        [MessageDirectionEnum.FromChild]: unknown;
-        [MessageDirectionEnum.FromParent]: unknown;
+        [IframeMessageDirectionEnum.FromChild]: unknown;
+        [IframeMessageDirectionEnum.FromParent]: unknown;
     }
 >;
 
-export enum MessageDirectionEnum {
+/** @category Internal */
+export enum IframeMessageDirectionEnum {
     FromParent = 'from-parent',
     FromChild = 'from-child',
 }

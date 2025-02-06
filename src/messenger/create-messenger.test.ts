@@ -1,13 +1,13 @@
-import {convertTemplateToString} from '@augment-vir/element-vir';
-import {assert, html, fixture as renderFixture} from '@open-wc/testing';
-import {assertInstanceOf, assertThrows, assertTypeOf} from 'run-time-assertions';
-import {MessageDirectionEnum, createIframeMessenger} from '..';
+import {assert} from '@augment-vir/assert';
+import {describe, it, testWeb} from '@augment-vir/test';
+import {convertTemplateToString, html} from 'element-vir';
+import {IframeMessageDirectionEnum, createIframeMessenger} from '../index.js';
 
 async function setupTest() {
-    const iframeElement = await renderFixture(html`
+    const iframeElement = await testWeb.render(html`
         <iframe></iframe>
     `);
-    assertInstanceOf(iframeElement, HTMLIFrameElement);
+    assert.instanceOf(iframeElement, HTMLIFrameElement);
 
     const messenger = createIframeMessenger<ExampleMessageData>();
 
@@ -36,24 +36,24 @@ enum ExampleMessageType {
 
 type ExampleMessageData = {
     [ExampleMessageType.Ready]: {
-        [MessageDirectionEnum.FromParent]: undefined;
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: undefined;
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
     [ExampleMessageType.SendSize]: {
-        [MessageDirectionEnum.FromParent]: undefined;
-        [MessageDirectionEnum.FromChild]: Dimensions;
+        [IframeMessageDirectionEnum.FromParent]: undefined;
+        [IframeMessageDirectionEnum.FromChild]: Dimensions;
     };
     [ExampleMessageType.SendScale]: {
-        [MessageDirectionEnum.FromParent]: Dimensions;
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: Dimensions;
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
     [ExampleMessageType.SendScalingMethod]: {
-        [MessageDirectionEnum.FromParent]: 'pixelated' | 'default';
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: 'pixelated' | 'default';
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
     [ExampleMessageType.ForceSize]: {
-        [MessageDirectionEnum.FromParent]: Dimensions | undefined;
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: Dimensions | undefined;
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
 };
 
@@ -147,9 +147,9 @@ describe(createIframeMessenger.name, () => {
                     parentOrigin: '*',
                     listener: (message): any => {
                         if (message.type === ExampleMessageType.ForceSize) {
-                            assertTypeOf(message.data).toEqualTypeOf<Dimensions | undefined>();
+                            assert.tsType(message.data).equals<Dimensions | undefined>();
                         } else if (message.type === ExampleMessageType.Ready) {
-                            assertTypeOf(message.data).toEqualTypeOf<undefined>();
+                            assert.tsType(message.data).equals<undefined>();
                         }
                     },
                 });
@@ -167,7 +167,7 @@ describe(createIframeMessenger.name, () => {
     it('fails if the iframe never loads (cause it has no src url yet)', async () => {
         const {iframe, messenger} = await setupTest();
 
-        await assertThrows(
+        await assert.throws(
             async () =>
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
@@ -194,11 +194,11 @@ describe(createIframeMessenger.name, () => {
                     <script>
                         globalThis.addEventListener('message', (event) => {
                             const message = event.data;
-                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                            if (message.direction === '${IframeMessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
                                     messageId: message.messageId,
                                     type: message.type,
-                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    direction: '${IframeMessageDirectionEnum.FromChild}',
                                     data: undefined,
                                 });
                             }
@@ -211,7 +211,7 @@ describe(createIframeMessenger.name, () => {
 
         iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
 
-        await assertThrows(
+        await assert.throws(
             async () =>
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
@@ -238,11 +238,11 @@ describe(createIframeMessenger.name, () => {
                     <script>
                         globalThis.addEventListener('message', (event) => {
                             const message = event.data;
-                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                            if (message.direction === '${IframeMessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
                                     messageId: message.messageId,
                                     type: message.type,
-                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    direction: '${IframeMessageDirectionEnum.FromChild}',
                                     data: undefined,
                                 });
                             }
@@ -280,11 +280,11 @@ describe(createIframeMessenger.name, () => {
                     <script>
                         globalThis.addEventListener('message', (event) => {
                             const message = event.data;
-                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                            if (message.direction === '${IframeMessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
                                     messageId: message.messageId,
                                     type: message.type,
-                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    direction: '${IframeMessageDirectionEnum.FromChild}',
                                     data: {height: 1, width: 2},
                                 });
                             }
@@ -310,7 +310,7 @@ describe(createIframeMessenger.name, () => {
             },
         });
 
-        assert.deepStrictEqual(result.data, {height: 1, width: 2});
+        assert.deepEquals(result.data, {height: 1, width: 2});
     });
 
     it('fails if the child sends an error', async () => {
@@ -322,11 +322,11 @@ describe(createIframeMessenger.name, () => {
                     <script>
                         globalThis.addEventListener('message', (event) => {
                             const message = event.data;
-                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                            if (message.direction === '${IframeMessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
                                     messageId: message.messageId,
                                     type: 'error',
-                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    direction: '${IframeMessageDirectionEnum.FromChild}',
                                 });
                             }
                         });
@@ -338,7 +338,7 @@ describe(createIframeMessenger.name, () => {
 
         iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
 
-        await assertThrows(
+        await assert.throws(
             async () =>
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
@@ -371,7 +371,7 @@ describe(createIframeMessenger.name, () => {
 
         iframe.srcdoc = convertTemplateToString(iframeSrcDoc);
 
-        await assertThrows(
+        await assert.throws(
             async () =>
                 await messenger.sendMessageToChild({
                     iframeElement: iframe,
@@ -392,7 +392,7 @@ describe(createIframeMessenger.name, () => {
     it('fails if no iframe is given', async () => {
         const {messenger} = await setupTest();
 
-        await assertThrows(
+        await assert.throws(
             async () =>
                 await messenger.sendMessageToChild({
                     iframeElement: undefined as any,
@@ -419,11 +419,11 @@ describe(createIframeMessenger.name, () => {
                     <script>
                         globalThis.addEventListener('message', (event) => {
                             const message = event.data;
-                            if (message.direction === '${MessageDirectionEnum.FromParent}') {
+                            if (message.direction === '${IframeMessageDirectionEnum.FromParent}') {
                                 globalThis.parent.postMessage({
                                     messageId: message.messageId,
                                     type: message.type,
-                                    direction: '${MessageDirectionEnum.FromChild}',
+                                    direction: '${IframeMessageDirectionEnum.FromChild}',
                                     data: undefined,
                                 });
                             }
@@ -446,6 +446,6 @@ describe(createIframeMessenger.name, () => {
             },
         });
 
-        assert.include(output.event.origin, 'localhost');
+        assert.isIn('localhost', output.event.origin);
     });
 });

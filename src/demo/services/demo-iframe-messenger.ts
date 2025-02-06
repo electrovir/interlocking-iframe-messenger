@@ -1,13 +1,13 @@
-import {createIframeMessenger, MessageDirectionEnum} from '../..';
+import {createIframeMessenger, IframeMessageDirectionEnum} from '../../index.js';
 
 export type DemoMessageData = {
     sendStringToChild: {
-        [MessageDirectionEnum.FromParent]: string;
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: string;
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
     requestNumberFromChild: {
-        [MessageDirectionEnum.FromParent]: undefined;
-        [MessageDirectionEnum.FromChild]: number;
+        [IframeMessageDirectionEnum.FromParent]: undefined;
+        [IframeMessageDirectionEnum.FromChild]: number;
     };
 };
 

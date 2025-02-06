@@ -1,4 +1,4 @@
-import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example';
+import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example.js';
 
 async function sendMyMessage(iframeElement: HTMLIFrameElement) {
     const childValue: string = (

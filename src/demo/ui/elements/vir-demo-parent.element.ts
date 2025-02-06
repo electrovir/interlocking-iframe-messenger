@@ -1,7 +1,7 @@
 import {randomString} from '@augment-vir/common';
 import {classMap, css, defineElementNoInputs, html, listen, onDomCreated} from 'element-vir';
-import {demoIframeMessenger} from '../../services/demo-iframe-messenger';
-import {childMarker} from '../../services/env/is-child';
+import {demoIframeMessenger} from '../../services/demo-iframe-messenger.js';
+import {childMarker} from '../../services/env/is-child.js';
 
 export const VirDemoParent = defineElementNoInputs({
     tagName: 'vir-demo-parent',
@@ -36,7 +36,7 @@ export const VirDemoParent = defineElementNoInputs({
             border: 1px solid red;
         }
     `,
-    renderCallback({state, updateState}) {
+    render({state, updateState}) {
         const iframeSrc = `?${childMarker}`;
 
         const shouldButtonsBeDisabled = !state.iframeElement;

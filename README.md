@@ -32,7 +32,7 @@ Make sure to provide a generic type to `createIframeMessenger` so that your mess
 <!-- example-link: src/readme-examples/messenger-setup.example.ts -->
 
 ```TypeScript
-import {createIframeMessenger, MessageDirectionEnum} from 'interlocking-iframe-messenger';
+import {createIframeMessenger, IframeMessageDirectionEnum} from 'interlocking-iframe-messenger';
 
 export enum MessageTypeEnum {
     RequestDataFromChild = 'request-data-from-child',
@@ -41,12 +41,12 @@ export enum MessageTypeEnum {
 
 export type MessageData = {
     [MessageTypeEnum.RequestDataFromChild]: {
-        [MessageDirectionEnum.FromParent]: undefined;
-        [MessageDirectionEnum.FromChild]: string;
+        [IframeMessageDirectionEnum.FromParent]: undefined;
+        [IframeMessageDirectionEnum.FromChild]: string;
     };
     [MessageTypeEnum.SendDataToChild]: {
-        [MessageDirectionEnum.FromParent]: string;
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: string;
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
 };
 
@@ -62,7 +62,7 @@ Based on the given message type, if data is expected from the child iframe, a `v
 <!-- example-link: src/readme-examples/parent-send-message.example.ts -->
 
 ```TypeScript
-import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example';
+import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example.js';
 
 async function sendMyMessage(iframeElement: HTMLIFrameElement) {
     const childValue: string = (
@@ -95,7 +95,7 @@ Use `.listenForParentMessages()` in the child iframe source code to properly han
 <!-- example-link: src/readme-examples/child-listen-to-messages.example.ts -->
 
 ```TypeScript
-import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example';
+import {MessageTypeEnum, myIframeMessenger} from './messenger-setup.example.js';
 
 myIframeMessenger.listenForParentMessages({
     parentOrigin: 'https://example.com',

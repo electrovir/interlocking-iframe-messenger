@@ -1,4 +1,4 @@
-/* c8 ignore start */
+/* node-coverage disable */
 
 let debugMode = false;
 

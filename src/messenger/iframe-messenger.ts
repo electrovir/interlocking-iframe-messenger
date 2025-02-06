@@ -1,9 +1,14 @@
-import {MaybePromise, PartialAndUndefined} from '@augment-vir/common';
-import {GlobalMessenger} from './global-object-for-messaging';
-import {BaseMessageData, Message, MessageDirectionEnum} from './message';
-import {MessageForChildParams} from './send-message-inputs';
+import {MaybePromise, PartialWithUndefined} from '@augment-vir/common';
+import {GlobalMessenger} from './global-object-for-messaging.js';
+import {BaseIframeMessageData, IframeMessage, IframeMessageDirectionEnum} from './message.js';
+import {IframeMessageForChildParams} from './send-message-inputs.js';
 
-export type _Options = PartialAndUndefined<{
+/**
+ * Options for {@link IframeMessenger}.
+ *
+ * @category Internal
+ */
+export type IframeListenerOptions = PartialWithUndefined<{
     /**
      * Ignores the any origin warnings. This is dangerous! Allowing any origin will expose your
      * iframe to any parent domain which can then steal your data.
@@ -11,13 +16,17 @@ export type _Options = PartialAndUndefined<{
     _DANGER_ignoreAnyOriginWarning: boolean;
 }>;
 
-export type IframeMessenger<MessageData extends BaseMessageData> = {
+/** @category Internal */
+export type IframeMessenger<MessageData extends BaseIframeMessageData> = {
+    /** Sends a message to the child iframe and waits for a response. */
     sendMessageToChild: <const SpecificMessageType extends keyof MessageData>(
-        inputs: Readonly<MessageForChildParams<SpecificMessageType, MessageData>>,
+        inputs: Readonly<IframeMessageForChildParams<SpecificMessageType, MessageData>>,
     ) => Promise<{
-        data: MessageData[SpecificMessageType][MessageDirectionEnum.FromChild];
-        event: MessageEvent<MessageData[SpecificMessageType][MessageDirectionEnum.FromChild]>;
+        data: MessageData[SpecificMessageType][IframeMessageDirectionEnum.FromChild];
+        event: MessageEvent<MessageData[SpecificMessageType][IframeMessageDirectionEnum.FromChild]>;
     }>;
+
+    /** Use this inside an iframe to listen to messages from the parent window. */
     listenForParentMessages: (inputs: {
         /**
          * Origin of the parent's URL that this listener will listen to. Messages sent to the
@@ -30,14 +39,18 @@ export type IframeMessenger<MessageData extends BaseMessageData> = {
         parentOrigin: string;
         /** This is called when a message is received. */
         listener: (
-            message: Message<keyof MessageData, MessageData, MessageDirectionEnum.FromParent> & {
+            message: IframeMessage<
+                keyof MessageData,
+                MessageData,
+                IframeMessageDirectionEnum.FromParent
+            > & {
                 originalEvent: MessageEvent;
             },
             removeListener: () => void,
         ) => MaybePromise<
-            MessageData[keyof MessageData][MessageDirectionEnum.FromChild] | undefined
+            MessageData[keyof MessageData][IframeMessageDirectionEnum.FromChild] | undefined
         >;
         globalObject?: GlobalMessenger;
-        _options?: _Options;
+        options?: IframeListenerOptions;
     }) => void;
 };

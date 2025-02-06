@@ -1,7 +1,7 @@
 import {css, defineElementNoInputs, html, renderIf} from 'element-vir';
-import {isChild} from '../../services/env/is-child';
-import {VirDemoChild} from './vir-demo-child.element';
-import {VirDemoParent} from './vir-demo-parent.element';
+import {isChild} from '../../services/env/is-child.js';
+import {VirDemoChild} from './vir-demo-child.element.js';
+import {VirDemoParent} from './vir-demo-parent.element.js';
 
 export const VirDemoApp = defineElementNoInputs({
     tagName: 'vir-demo-app',
@@ -20,7 +20,7 @@ export const VirDemoApp = defineElementNoInputs({
             height: 100%;
         }
     `,
-    renderCallback() {
+    render() {
         return renderIf(
             isChild,
             html`

@@ -5,13 +5,15 @@ export function isAllowedOrigin(
     messageEvent: Pick<MessageEvent, 'origin'>,
     ignoreWarning: boolean,
 ): boolean {
-    return wrapInTry({
-        callback() {
+    return wrapInTry(
+        () => {
             assertAllowedOrigin(requiredOrigin, messageEvent, ignoreWarning);
             return true;
         },
-        fallbackValue: false,
-    });
+        {
+            fallbackValue: false,
+        },
+    );
 }
 
 function assertAllowedOrigin(

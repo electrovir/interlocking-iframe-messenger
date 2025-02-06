@@ -1,10 +1,11 @@
 import {RequiredAndNotNull} from '@augment-vir/common';
-import {GlobalMessenger} from './global-object-for-messaging';
-import {BaseMessageData, Message, MessageDirectionEnum} from './message';
+import {GlobalMessenger} from './global-object-for-messaging.js';
+import {BaseIframeMessageData, IframeMessage, IframeMessageDirectionEnum} from './message.js';
 
-export type MessageForChildParams<
+/** @category Internal */
+export type IframeMessageForChildParams<
     MessageType extends keyof MessageDataOptions,
-    MessageDataOptions extends BaseMessageData,
+    MessageDataOptions extends BaseIframeMessageData,
 > = {
     iframeElement: HTMLIFrameElement;
     timeout?: {milliseconds: number} | undefined;
@@ -16,17 +17,27 @@ export type MessageForChildParams<
      */
     childOrigin: string;
     type: MessageType;
-    data: Message<MessageType, MessageDataOptions, MessageDirectionEnum.FromParent>['data'];
+    data: IframeMessage<
+        MessageType,
+        MessageDataOptions,
+        IframeMessageDirectionEnum.FromParent
+    >['data'];
     globalObject?: GlobalMessenger | undefined;
+    /** A custom checker for verifying data from the child is correct. */
     verifyChildData?: (
         data:
             | Readonly<
-                  Message<MessageType, MessageDataOptions, MessageDirectionEnum.FromChild>['data']
+                  IframeMessage<
+                      MessageType,
+                      MessageDataOptions,
+                      IframeMessageDirectionEnum.FromChild
+                  >['data']
               >
             | undefined,
     ) => boolean;
 };
 
+/** @category Internal */
 export type IframeMessengerOptions = {
     /**
      * The maximum amount of time in milliseconds that the messenger will wait for a response to
@@ -35,6 +46,7 @@ export type IframeMessengerOptions = {
     timeout?: {milliseconds: number} | undefined;
 };
 
+/** @category Internal */
 export const defaultIframeMessengerOptions: RequiredAndNotNull<IframeMessengerOptions> = {
     timeout: {
         milliseconds: 10_000,

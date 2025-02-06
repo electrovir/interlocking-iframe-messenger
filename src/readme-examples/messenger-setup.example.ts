@@ -1,4 +1,4 @@
-import {createIframeMessenger, MessageDirectionEnum} from '..';
+import {createIframeMessenger, IframeMessageDirectionEnum} from '../index.js';
 
 export enum MessageTypeEnum {
     RequestDataFromChild = 'request-data-from-child',
@@ -7,12 +7,12 @@ export enum MessageTypeEnum {
 
 export type MessageData = {
     [MessageTypeEnum.RequestDataFromChild]: {
-        [MessageDirectionEnum.FromParent]: undefined;
-        [MessageDirectionEnum.FromChild]: string;
+        [IframeMessageDirectionEnum.FromParent]: undefined;
+        [IframeMessageDirectionEnum.FromChild]: string;
     };
     [MessageTypeEnum.SendDataToChild]: {
-        [MessageDirectionEnum.FromParent]: string;
-        [MessageDirectionEnum.FromChild]: undefined;
+        [IframeMessageDirectionEnum.FromParent]: string;
+        [IframeMessageDirectionEnum.FromChild]: undefined;
     };
 };
 

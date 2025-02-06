@@ -1,11 +1,17 @@
-import {isDebugMode} from '../debug-mode';
-import {isAllowedOrigin} from './allowed-origin';
-import {IframeMessenger} from './iframe-messenger';
-import {BaseMessageData, Message, MessageDirectionEnum} from './message';
-import {IframeMessengerOptions, defaultIframeMessengerOptions} from './send-message-inputs';
-import {sendPingPongMessageToChild} from './send-ping-ping-message-to-child';
+import {isDebugMode} from '../debug-mode.js';
+import {isAllowedOrigin} from './allowed-origin.js';
+import {IframeMessenger} from './iframe-messenger.js';
+import {BaseIframeMessageData, IframeMessage, IframeMessageDirectionEnum} from './message.js';
+import {IframeMessengerOptions, defaultIframeMessengerOptions} from './send-message-inputs.js';
+import {sendPingPongMessageToChild} from './send-ping-pong-message-to-child.js';
 
-export function createIframeMessenger<MessageDataOptions extends BaseMessageData>({
+/**
+ * This is the core of the `interlocking-iframe-messenger` package. Use this to create a messenger
+ * and then use that messenger to start sending messages to an iframe.
+ *
+ * @category Main
+ */
+export function createIframeMessenger<MessageDataOptions extends BaseIframeMessageData>({
     timeout = defaultIframeMessengerOptions.timeout,
 }: IframeMessengerOptions = defaultIframeMessengerOptions): IframeMessenger<MessageDataOptions> {
     return {
@@ -31,19 +37,18 @@ export function createIframeMessenger<MessageDataOptions extends BaseMessageData
                     !isAllowedOrigin(
                         inputs.parentOrigin,
                         messageEvent,
-                        !!inputs._options?._DANGER_ignoreAnyOriginWarning,
+                        !!inputs.options?._DANGER_ignoreAnyOriginWarning,
                     )
                 ) {
                     return;
                 }
-                const messageFromParent: Message<
+                const messageFromParent: IframeMessage<
                     keyof MessageDataOptions,
                     MessageDataOptions,
-                    MessageDirectionEnum.FromParent
+                    IframeMessageDirectionEnum.FromParent
                 > = messageEvent.data;
 
-                // ignore debug logging
-                /* c8 ignore start */
+                /* node-coverage ignore next 7: ignore debug logging */
                 if (isDebugMode()) {
                     console.info(
                         'Received message from parent',
@@ -51,7 +56,6 @@ export function createIframeMessenger<MessageDataOptions extends BaseMessageData
                         messageFromParent,
                     );
                 }
-                /* c8 ignore stop */
 
                 const responseData = await inputs.listener(
                     {
@@ -62,15 +66,18 @@ export function createIframeMessenger<MessageDataOptions extends BaseMessageData
                         globalObject.removeEventListener('message', listenCallback);
                     },
                 );
-                const messageForParent: Message<any, any, MessageDirectionEnum.FromChild> = {
+                const messageForParent: IframeMessage<
+                    any,
+                    any,
+                    IframeMessageDirectionEnum.FromChild
+                > = {
                     type: messageFromParent.type,
-                    direction: MessageDirectionEnum.FromChild,
+                    direction: IframeMessageDirectionEnum.FromChild,
                     data: responseData,
                     messageId: messageFromParent.messageId,
                 };
 
-                // ignore debug logging
-                /* c8 ignore start */
+                /* node-coverage ignore next 7: ignore debug logging */
                 if (isDebugMode()) {
                     console.info(
                         'Sending message to parent',
@@ -78,7 +85,6 @@ export function createIframeMessenger<MessageDataOptions extends BaseMessageData
                         messageForParent,
                     );
                 }
-                /* c8 ignore stop */
 
                 globalObject.parent.postMessage(messageForParent, {
                     targetOrigin: inputs.parentOrigin,

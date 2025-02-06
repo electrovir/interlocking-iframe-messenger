@@ -1,40 +1,41 @@
 import {ensureError, randomString, wait} from '@augment-vir/common';
-import {isDebugMode} from '../debug-mode';
-import {IframeDisconnectedError} from '../errors/iframe-disconnected.error';
-import {isAllowedOrigin} from './allowed-origin';
-import {GlobalMessenger} from './global-object-for-messaging';
-import {BaseMessageData, Message, MessageDirectionEnum} from './message';
-import {MessageForChildParams} from './send-message-inputs';
+import {convertDuration, type AnyDuration} from 'date-vir';
+import {isDebugMode} from '../debug-mode.js';
+import {IframeDisconnectedError} from '../errors/iframe-disconnected.error.js';
+import {isAllowedOrigin} from './allowed-origin.js';
+import {GlobalMessenger} from './global-object-for-messaging.js';
+import {BaseIframeMessageData, IframeMessage, IframeMessageDirectionEnum} from './message.js';
+import {IframeMessageForChildParams} from './send-message-inputs.js';
 
 function isMessageKind<
     SpecificMessageType extends keyof MessageDataOptions,
-    MessageDataOptions extends BaseMessageData,
-    MessageDirectionGeneric extends MessageDirectionEnum,
+    MessageDataOptions extends BaseIframeMessageData,
+    MessageDirectionGeneric extends IframeMessageDirectionEnum,
 >(
     type: SpecificMessageType,
     direction: MessageDirectionGeneric,
-    message: Readonly<Message<any, any, any>>,
-): message is Message<SpecificMessageType, MessageDataOptions, MessageDirectionGeneric> {
+    message: Readonly<IframeMessage<any, any, any>>,
+): message is IframeMessage<SpecificMessageType, MessageDataOptions, MessageDirectionGeneric> {
     return message.type === type && message.direction === direction;
 }
 
-function calculateAttemptWaitDuration(attemptCount: number) {
+function calculateAttemptWaitDuration(attemptCount: number): AnyDuration {
     if (attemptCount < 2) {
-        return 10;
+        return {milliseconds: 10};
     } else if (attemptCount < 5) {
-        return 100;
+        return {milliseconds: 100};
     } else if (attemptCount < 10) {
-        return 1000;
+        return {seconds: 1};
     } else {
-        return 5000;
+        return {seconds: 5};
     }
 }
 
 export async function sendPingPongMessageToChild(
-    {data, type, verifyChildData, iframeElement}: MessageForChildParams<any, any>,
+    {data, type, verifyChildData, iframeElement}: IframeMessageForChildParams<any, any>,
     requiredOrigin: string,
-    timeout: {milliseconds: number},
-    interval: {milliseconds: number} | undefined,
+    timeout: AnyDuration,
+    interval: AnyDuration | undefined,
     globalObject: GlobalMessenger,
 ): Promise<{data: any; event: MessageEvent}> {
     if (!iframeElement) {
@@ -46,38 +47,37 @@ export async function sendPingPongMessageToChild(
      * As cast necessary because this value gets set in callbacks and TypeScript can't figure out
      * that it ever gets set to anything other than undefined.
      */
-    let responseMessage: Message<any, any, any> | undefined;
+    let responseMessage: IframeMessage<any, any, any> | undefined;
     let responseEvent: MessageEvent | undefined;
     let listenerError: Error | undefined;
     let messagePosted = false;
     const messageToSend = {data, type};
     const fullMessageToSend: Omit<
-        Message<any, any, MessageDirectionEnum.FromParent>,
+        IframeMessage<any, any, IframeMessageDirectionEnum.FromParent>,
         'direction'
     > & {
-        direction: MessageDirectionEnum.FromParent;
+        direction: IframeMessageDirectionEnum.FromParent;
     } = {
         ...messageToSend,
-        direction: MessageDirectionEnum.FromParent,
+        direction: IframeMessageDirectionEnum.FromParent,
         messageId: randomString(32),
     };
 
     const expectedMessageType = messageToSend.type;
 
-    function responseListener(messageEvent: MessageEvent<any>) {
+    function responseListener(messageEvent: MessageEvent) {
         try {
             if (!isAllowedOrigin(requiredOrigin, messageEvent, false)) {
                 return;
             }
 
-            const receivedMessage: Message<any, any, any> = messageEvent.data;
+            const receivedMessage: IframeMessage<any, any, any> = messageEvent.data;
 
             if (receivedMessage.type === 'error') {
                 throw new Error(`Child threw an error: ${receivedMessage.data}`);
             }
 
-            // ignore debug logging
-            /* c8 ignore start */
+            /* node-coverage ignore next 7: ignore debug logging */
             if (isDebugMode()) {
                 console.info(
                     'Received message from child',
@@ -85,14 +85,13 @@ export async function sendPingPongMessageToChild(
                     receivedMessage,
                 );
             }
-            /* c8 ignore stop */
 
             if (
                 receivedMessage &&
                 messagePosted &&
                 isMessageKind(
                     expectedMessageType,
-                    MessageDirectionEnum.FromChild,
+                    IframeMessageDirectionEnum.FromChild,
                     receivedMessage,
                 ) &&
                 receivedMessage.messageId === fullMessageToSend.messageId
@@ -122,19 +121,16 @@ export async function sendPingPongMessageToChild(
 
     const startTime = Date.now();
 
-    while (
-        !validResponseReceived &&
-        Date.now() - startTime < timeout.milliseconds &&
-        !listenerError
-    ) {
+    const timeoutMs = convertDuration(timeout, {milliseconds: true}).milliseconds;
+
+    while (!validResponseReceived && Date.now() - startTime < timeoutMs && !listenerError) {
         if (!iframeElement.isConnected) {
             throw new IframeDisconnectedError();
         }
         const iframeWindow = iframeElement.contentWindow;
 
         if (iframeWindow) {
-            // ignore debug logging
-            /* c8 ignore start */
+            /* node-coverage ignore next 11: ignore debug logging */
             if (isDebugMode()) {
                 if (messagePosted) {
                     console.info('Re-sending message to child', fullMessageToSend.messageId);
@@ -146,20 +142,18 @@ export async function sendPingPongMessageToChild(
                     );
                 }
             }
-            /* c8 ignore stop */
             messagePosted = true;
             iframeWindow.postMessage(fullMessageToSend, {targetOrigin: requiredOrigin});
         }
-        await wait(interval?.milliseconds || calculateAttemptWaitDuration(tryCount));
+        await wait(interval || calculateAttemptWaitDuration(tryCount));
         tryCount++;
     }
     const attemptDuration = Date.now() - startTime;
-    // ignore debug logging
-    /* c8 ignore start */
+
+    /* node-coverage ignore next 3: ignore debug logging */
     if (isDebugMode()) {
         console.info('attempt duration', attemptDuration, 'messageId', fullMessageToSend.messageId);
     }
-    /* c8 ignore stop */
     globalObject.removeEventListener('message', responseListener);
 
     if (listenerError) {
@@ -170,12 +164,11 @@ export async function sendPingPongMessageToChild(
         throw new Error(
             `Failed to receive response from the iframe for message '${
                 messageToSend.type
-            }' after '${Math.ceil(timeout.milliseconds / 1000)}' seconds).`,
+            }' after '${Math.ceil(convertDuration(timeout, {seconds: true}).seconds)}' seconds).`,
         );
     }
 
-    // no way to test this, just covering edge cases for types
-    /* c8 ignore next 3 */
+    /* node-coverage ignore next 3: there's no way to intentionally trigger this */
     if (!responseEvent) {
         throw new Error(`Never got message event from child but received a valid response`);
     }
